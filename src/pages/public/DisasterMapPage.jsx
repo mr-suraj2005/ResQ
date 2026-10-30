@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useEmergencyData } from '../../context/EmergencyDataContext';
 import { DisasterLeafletMap } from '../../components/map/DisasterLeafletMap';
 import { AIAnalysisPanel } from '../../components/ai/AIAnalysisPanel';
+import { LiveLocationDisasterPredictor } from '../../components/ai/LiveLocationDisasterPredictor';
 import { SeverityBadge } from '../../components/common/SeverityBadge';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { SearchBar } from '../../components/common/SearchBar';
@@ -239,7 +240,8 @@ export const DisasterMapPage = () => {
         {/* Sidebar Body */}
         <div className="map-sidebar-content" style={{ overflowY: 'auto', flex: 1, padding: '1rem' }}>
           {activeTab === 'AI_ENGINE' ? (
-            <div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <LiveLocationDisasterPredictor compact={true} />
               <AIAnalysisPanel compact={true} />
             </div>
           ) : (

@@ -6,6 +6,7 @@ import { useEmergencyData } from '../../context/EmergencyDataContext';
 import { liveTelemetryService } from '../../services/liveTelemetryService';
 import { SeverityBadge } from '../../components/common/SeverityBadge';
 import { StatusBadge } from '../../components/common/StatusBadge';
+import { LiveLocationDisasterPredictor } from '../../components/ai/LiveLocationDisasterPredictor';
 import { 
   AlertTriangle, 
   Building2, 
@@ -424,6 +425,13 @@ export const HomePage = () => {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* =========================================================================
+          LIVE GPS LOCATION, METEOROLOGICAL TELEMETRY & AI DISASTER PREDICTOR
+          ========================================================================= */}
+      <section style={{ marginBottom: '2.75rem' }} aria-label="AI Disaster Prediction and Live Telemetry">
+        <LiveLocationDisasterPredictor />
       </section>
 
       {/* =========================================================================
