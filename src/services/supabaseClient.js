@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { initialShelters } from '../data/shelters';
+import { initialResponseResources } from '../data/tacticalLayers';
 
 // Default configuration with safe fallback to user-provided credentials
 const SUPABASE_URL = (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_SUPABASE_URL) || 'https://vgwpwhgltnrjzfclmzlw.supabase.co';
@@ -320,9 +321,42 @@ export async function fetchRemoteResponseResources() {
   try {
     const { data, error } = await supabase.from('response_resources').select('*');
     if (error) throw error;
-    return data;
+    if (!data || data.length === 0) return initialResponseResources;
+
+    const initialMap = new Map(initialResponseResources.map(r => [r.id, r]));
+
+    const remoteMapped = data.map(row => {
+      const initial = initialMap.get(row.id) || {};
+      return {
+        ...initial,
+        id: row.id,
+        name: row.name || initial.name,
+        facility: initial.facility || row.name,
+        type: 'Response Force',
+        location: initial.location || row.location || 'India',
+        state: initial.state || row.state || 'India',
+        district: row.district || initial.district,
+        address: initial.address || row.address,
+        verifiedDetails: initial.verifiedDetails || row.equipment || 'National rescue force command',
+        status: row.status || initial.status || 'ACTIVE FORCE',
+        latitude: Number(row.latitude) || initial.latitude || 28.6139,
+        longitude: Number(row.longitude) || initial.longitude || 77.2090,
+        personnel: Number(row.personnel) || initial.personnel || 1149,
+        equipment: row.equipment || initial.equipment,
+        contact: row.contact || initial.contact || '112 / 011-24363260'
+      };
+    });
+
+    // Ensure all 10 official NDRF battalions are present
+    initialResponseResources.forEach(init => {
+      if (!remoteMapped.some(r => r.id === init.id)) {
+        remoteMapped.push(init);
+      }
+    });
+
+    return remoteMapped;
   } catch (err) {
-    return null;
+    return initialResponseResources;
   }
 }
 

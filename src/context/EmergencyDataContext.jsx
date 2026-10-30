@@ -25,12 +25,12 @@ import {
 const EmergencyDataContext = createContext(null);
 
 const STORAGE_KEYS = {
-  INCIDENTS: 'resq_incidents_v2',
-  ALERTS: 'resq_alerts_v2',
-  SHELTERS: 'resq_shelters_v2',
-  INVENTORY: 'resq_inventory_v2',
-  BLOCKED_ROADS: 'resq_blocked_roads_v2',
-  RESOURCES: 'resq_resources_v2'
+  INCIDENTS: 'resq_incidents_v3',
+  ALERTS: 'resq_alerts_v3',
+  SHELTERS: 'resq_shelters_v3',
+  INVENTORY: 'resq_inventory_v3',
+  BLOCKED_ROADS: 'resq_blocked_roads_v3',
+  RESOURCES: 'resq_resources_v3'
 };
 
 export const EmergencyDataProvider = ({ children }) => {
@@ -384,7 +384,8 @@ export const EmergencyDataProvider = ({ children }) => {
     localStorage.removeItem(STORAGE_KEYS.BLOCKED_ROADS);
     localStorage.removeItem(STORAGE_KEYS.RESOURCES);
     // Legacy cleanup
-    ['resq_incidents_v1', 'resq_alerts_v1', 'resq_shelters_v1', 'resq_inventory_v1', 'resq_blocked_roads_v1', 'resq_resources_v1'].forEach(k => localStorage.removeItem(k));
+    ['resq_incidents_v1', 'resq_alerts_v1', 'resq_shelters_v1', 'resq_inventory_v1', 'resq_blocked_roads_v1', 'resq_resources_v1',
+     'resq_incidents_v2', 'resq_alerts_v2', 'resq_shelters_v2', 'resq_inventory_v2', 'resq_blocked_roads_v2', 'resq_resources_v2'].forEach(k => localStorage.removeItem(k));
   };
 
   // Precomputed Executive KPI metrics

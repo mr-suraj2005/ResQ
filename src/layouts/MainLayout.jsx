@@ -11,7 +11,7 @@ export const MainLayout = () => {
       <SimulationBanner />
       <Navbar />
       <AlertBanner />
-      <main style={{ flex: 1 }}>
+      <main className="main-content" style={{ flex: 1 }}>
         <Outlet />
       </main>
       <Footer />

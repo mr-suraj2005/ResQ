@@ -125,7 +125,7 @@ code, kbd, samp, pre {
 }
 
 .page-container {
-  padding-top: 1.75rem;
+  padding-top: 2rem;
   padding-bottom: 3.5rem;
   min-height: calc(100vh - var(--header-height) - var(--simulation-bar-height) - 180px);
 }

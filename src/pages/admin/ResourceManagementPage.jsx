@@ -63,7 +63,7 @@ export const ResourceManagementPage = () => {
             {shelters.length} Strategic Hubs
           </div>
           <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-success-700)', fontWeight: 600, marginTop: '0.5rem' }}>
-            AIIMS New Delhi &bull; Odisha &bull; Andhra Pradesh &bull; West Bengal &bull; NDRF
+            10 Apex Hospitals &bull; 10 Shelter Networks &bull; 10 NDRF Battalions
           </div>
         </div>
 

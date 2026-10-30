@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useEmergencyData } from '../../context/EmergencyDataContext';
 import { DisasterLeafletMap } from '../../components/map/DisasterLeafletMap';
 import { AIAnalysisPanel } from '../../components/ai/AIAnalysisPanel';
@@ -35,6 +35,51 @@ export const DisasterMapPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [selectedTarget, setSelectedTarget] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  // URL query parameter support (e.g. from /shelters View on Live Map)
+  const [searchParams] = useSearchParams();
+  const paramLat = searchParams.get('lat');
+  const paramLng = searchParams.get('lng');
+  const paramZoom = searchParams.get('zoom');
+
+  useEffect(() => {
+    if (paramLat && paramLng) {
+      const lat = parseFloat(paramLat);
+      const lng = parseFloat(paramLng);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        const match = [...(shelters || []), ...(responseResources || [])].find(
+          item => Math.abs(item.latitude - lat) < 0.02 && Math.abs(item.longitude - lng) < 0.02
+        );
+        if (match) {
+          setSelectedTarget(match);
+        } else {
+          setSelectedTarget({
+            id: 'NAV-TARGET',
+            latitude: lat,
+            longitude: lng,
+            title: 'Selected Facility'
+          });
+        }
+      }
+    }
+  }, [paramLat, paramLng, shelters, responseResources]);
+
+  const mapCenter = useMemo(() => {
+    if (paramLat && paramLng) {
+      const lat = parseFloat(paramLat);
+      const lng = parseFloat(paramLng);
+      if (!isNaN(lat) && !isNaN(lng)) return [lat, lng];
+    }
+    return [21.1458, 79.0882];
+  }, [paramLat, paramLng]);
+
+  const mapZoom = useMemo(() => {
+    if (paramZoom) {
+      const z = parseInt(paramZoom);
+      if (!isNaN(z)) return z;
+    }
+    return (paramLat && paramLng) ? 10 : 5;
+  }, [paramZoom, paramLat, paramLng]);
 
   // 5 Tactical Layer Toggles
   const [layerVisibility, setLayerVisibility] = useState({
@@ -459,6 +504,8 @@ export const DisasterMapPage = () => {
           responseResources={responseResources}
           visibleLayers={layerVisibility}
           selectedTarget={selectedTarget}
+          center={mapCenter}
+          zoom={mapZoom}
           onMarkerClick={handleSelectIncident}
         />
       </main>

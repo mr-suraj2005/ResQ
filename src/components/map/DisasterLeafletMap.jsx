@@ -145,7 +145,7 @@ export const DisasterLeafletMap = ({
           maxZoom={19}
         />
 
-        {targetCoords && <MapController targetCoords={targetCoords} zoom={15} />}
+        {targetCoords && <MapController targetCoords={targetCoords} zoom={zoom > 5 ? zoom : 12} />}
 
         {/* =========================================================================
             INCIDENT MARKERS (Critical, High, Unverified)
