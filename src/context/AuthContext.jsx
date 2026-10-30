@@ -66,12 +66,11 @@ export const AuthProvider = ({ children }) => {
           setCurrentRoleState(detectedRole);
           setCurrentUser({
             id: session.user.id,
-            name: meta.full_name || session.user.email?.split('@')[0] || session.user.phone || 'Citizen User',
-            email: session.user.email || '',
+            name: meta.full_name || session.user.phone || 'Citizen User',
             phone: session.user.phone || meta.phone || '',
             role: detectedRole,
             zone: meta.zone || 'National Capital Region',
-            avatarInitials: (meta.full_name || session.user.email || 'CU').slice(0, 2).toUpperCase()
+            avatarInitials: (meta.full_name || session.user.phone || 'CU').slice(0, 2).toUpperCase()
           });
         }
       } catch (err) {
@@ -94,12 +93,11 @@ export const AuthProvider = ({ children }) => {
         setCurrentRoleState(detectedRole);
         setCurrentUser({
           id: session.user.id,
-          name: meta.full_name || session.user.email?.split('@')[0] || session.user.phone || 'Citizen User',
-          email: session.user.email || '',
+          name: meta.full_name || session.user.phone || 'Citizen User',
           phone: session.user.phone || meta.phone || '',
           role: detectedRole,
           zone: meta.zone || 'National Capital Region',
-          avatarInitials: (meta.full_name || session.user.email || 'CU').slice(0, 2).toUpperCase()
+          avatarInitials: (meta.full_name || session.user.phone || 'CU').slice(0, 2).toUpperCase()
         });
       } else if (event === 'SIGNED_OUT') {
         setCurrentRoleState(ROLES.CITIZEN);
@@ -144,26 +142,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
-   * Supabase Native: Sign In With Email & Password
-   */
-  const signInWithEmail = async (email, password) => {
-    try {
-      const { data, error } = await supabaseAuth.signInWithEmail(email, password);
-      if (error) throw error;
-      return { success: true, data };
-    } catch (err) {
-      // Check if user was attempting demo login credentials
-      if (email === 'sarah.jenkins@citizen.wa.gov' || email === 'e.vance@eoc.resq.gov' || email === 'm.chen@ndrf.resq.gov') {
-        const role = email.includes('eoc') ? ROLES.ADMIN : email.includes('ndrf') ? ROLES.RESPONDER : ROLES.CITIZEN;
-        login(email, password, role);
-        return { success: true, demoFallback: true };
-      }
-      return { success: false, error: err.message || 'Failed to authenticate with email' };
-    }
-  };
-
-  /**
-   * Supabase Native: Send Phone OTP
+   * Supabase Native: Send Phone OTP via Vonage
    */
   const signInWithPhone = async (formattedPhone) => {
     try {
@@ -171,19 +150,7 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
       return { success: true, data };
     } catch (err) {
-      console.warn('Supabase SMS dispatch notice:', err.message);
-      const isGatewayIssue = err.message?.toLowerCase().includes('vonage') || 
-                             err.message?.toLowerCase().includes('credential') || 
-                             err.message?.toLowerCase().includes('provider') ||
-                             err.message?.toLowerCase().includes('sms') ||
-                             err.status === 422;
-      return { 
-        success: false, 
-        error: err.message || 'Failed to send OTP to mobile number',
-        canDemoBypass: true,
-        demoCode: '123456',
-        isGatewayIssue
-      };
+      return { success: false, error: err.message || 'Failed to dispatch verification OTP' };
     }
   };
 
@@ -192,26 +159,25 @@ export const AuthProvider = ({ children }) => {
    */
   const verifyPhoneOtp = async (formattedPhone, otpCode) => {
     try {
-      // Allow Sandbox/Evaluation passcode 123456 for testing and when SMS provider has credentials issues
-      if (otpCode === '123456') {
-        const cleanPhone = formattedPhone.replace(/\D/g, '');
-        const citizenUser = {
-          id: `USR-${cleanPhone.slice(-4) || '8167'}`,
-          name: `Citizen (+${cleanPhone.slice(-10)})`,
-          email: `citizen.${cleanPhone.slice(-4)}@resq.gov`,
-          phone: formattedPhone,
-          role: ROLES.CITIZEN,
-          zone: 'Verified Mobile Citizen',
-          avatarInitials: 'CM'
-        };
-        setCurrentRoleState(ROLES.CITIZEN);
-        setCurrentUser(citizenUser);
-        localStorage.setItem('resq_role', ROLES.CITIZEN);
-        return { success: true, demoFallback: true, user: citizenUser };
-      }
-
       const { data, error } = await supabaseAuth.verifyPhoneOtp(formattedPhone, otpCode);
       if (error) throw error;
+
+      if (data?.session?.user) {
+        setSupabaseSession(data.session);
+        const meta = data.session.user.user_metadata || {};
+        const detectedRole = meta.role && ROLES[meta.role] ? meta.role : ROLES.CITIZEN;
+        setCurrentRoleState(detectedRole);
+        const userObj = {
+          id: data.session.user.id,
+          name: meta.full_name || formattedPhone || 'User',
+          phone: data.session.user.phone || formattedPhone,
+          role: detectedRole,
+          zone: meta.zone || 'National Capital Region',
+          avatarInitials: (meta.full_name || formattedPhone || 'CU').slice(0, 2).toUpperCase()
+        };
+        setCurrentUser(userObj);
+        localStorage.setItem('resq_role', detectedRole);
+      }
       return { success: true, data };
     } catch (err) {
       return { success: false, error: err.message || 'Invalid or expired 6-digit OTP' };
@@ -219,23 +185,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
-   * Supabase Native: Sign Up With Email
-   */
-  const signUpWithEmail = async (email, password, metadata = {}) => {
-    try {
-      const { data, error } = await supabaseAuth.signUpWithEmail(email, password, {
-        ...metadata,
-        role: metadata.role || ROLES.CITIZEN
-      });
-      if (error) throw error;
-      return { success: true, data };
-    } catch (err) {
-      return { success: false, error: err.message || 'Registration failed' };
-    }
-  };
-
-  /**
-   * Supabase Native: Sign Up / Sign In With Phone
+   * Supabase Native: Sign Up / Sign In With Phone & Role Metadata
    */
   const signUpWithPhone = async (formattedPhone, metadata = {}) => {
     try {
@@ -246,45 +196,27 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
       return { success: true, data };
     } catch (err) {
-      console.warn('Supabase phone signup notice:', err.message);
-      return { 
-        success: false, 
-        error: err.message || 'Phone registration failed',
-        canDemoBypass: true,
-        demoCode: '123456'
-      };
+      return { success: false, error: err.message || 'Phone registration failed' };
     }
   };
 
   /**
-   * Supabase Native: Forgot Password Request
-   */
-  const resetPassword = async (email) => {
-    try {
-      const { data, error } = await supabaseAuth.resetPasswordForEmail(email);
-      if (error) throw error;
-      return { success: true, data };
-    } catch (err) {
-      return { success: false, error: err.message || 'Password reset request failed' };
-    }
-  };
-
-  /**
-   * Local registration simulation fallback
+   * Profile synchronization helper
    */
   const register = (userData) => {
-    const newCitizen = {
+    const assignedRole = userData.role && ROLES[userData.role] ? userData.role : ROLES.CITIZEN;
+    const newProfile = {
       id: `USR-${Math.floor(1000 + Math.random() * 9000)}`,
-      name: userData.name || "Citizen User",
-      email: userData.email,
-      role: ROLES.CITIZEN,
-      zone: userData.zone || "National Capital Region",
+      name: userData.name || "Mobile Citizen",
       phone: userData.phone || "+91 98765 00000",
-      avatarInitials: (userData.name || "CU").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
+      role: assignedRole,
+      zone: userData.zone || "National Capital Region",
+      avatarInitials: (userData.name || "MC").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
     };
-    setCurrentRoleState(ROLES.CITIZEN);
-    setCurrentUser(newCitizen);
-    return newCitizen;
+    setCurrentRoleState(assignedRole);
+    setCurrentUser(newProfile);
+    localStorage.setItem('resq_role', assignedRole);
+    return newProfile;
   };
 
   const logout = async () => {
@@ -293,8 +225,10 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       // Ignored
     }
+    setSupabaseSession(null);
     setCurrentRoleState(ROLES.CITIZEN);
     setCurrentUser(DEMO_PROFILES[ROLES.CITIZEN]);
+    localStorage.removeItem('resq_role');
   };
 
   const value = {
@@ -306,13 +240,10 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    // Supabase Auth Methods
-    signInWithEmail,
+    // Mobile Authentication Methods
     signInWithPhone,
     verifyPhoneOtp,
-    signUpWithEmail,
     signUpWithPhone,
-    resetPassword,
     isAdmin: currentRole === ROLES.ADMIN,
     isResponder: currentRole === ROLES.RESPONDER,
     isCitizen: currentRole === ROLES.CITIZEN

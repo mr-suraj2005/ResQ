@@ -169,7 +169,7 @@ export const Navbar = () => {
                 to="/login" 
                 className="btn btn-ghost btn-xs" 
                 style={{ color: '#E2E8F0', padding: '0.35rem 0.65rem', borderRadius: 'var(--radius-pill)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
-                title="Sign In with Email or Mobile Number"
+                title="Sign In with Mobile Number"
                 onClick={closeMenu}
               >
                 <LogIn size={14} />

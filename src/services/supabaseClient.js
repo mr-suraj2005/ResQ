@@ -405,13 +405,6 @@ export function formatE164Phone(countryCode, nationalNumber) {
 }
 
 export const supabaseAuth = {
-  async signInWithEmail(email, password) {
-    return await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password
-    });
-  },
-
   async sendPhoneOtp(formattedPhone) {
     return await supabase.auth.signInWithOtp({
       phone: formattedPhone
@@ -426,28 +419,12 @@ export const supabaseAuth = {
     });
   },
 
-  async signUpWithEmail(email, password, metadata = {}) {
-    return await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: {
-        data: metadata
-      }
-    });
-  },
-
   async signUpWithPhone(formattedPhone, metadata = {}) {
     return await supabase.auth.signInWithOtp({
       phone: formattedPhone,
       options: {
         data: metadata
       }
-    });
-  },
-
-  async resetPasswordForEmail(email) {
-    return await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/login` : undefined
     });
   },
 
