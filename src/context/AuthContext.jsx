@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase, supabaseAuth } from '../services/supabaseClient';
 
 const AuthContext = createContext(null);
 
@@ -14,27 +15,27 @@ const DEMO_PROFILES = {
     name: "Sarah Jenkins",
     email: "sarah.jenkins@citizen.wa.gov",
     role: ROLES.CITIZEN,
-    zone: "Downtown Waterfront",
+    zone: "Connaught Place / Central Delhi",
     avatarInitials: "SJ",
-    phone: "(206) 555-0192"
+    phone: "+91 98765 43210"
   },
   [ROLES.ADMIN]: {
     id: "ADM-9011",
     name: "Commander Edward Vance",
-    email: "e.vance@eoc.seattle.gov",
+    email: "e.vance@eoc.resq.gov",
     role: ROLES.ADMIN,
-    department: "Seattle Emergency Operations Center",
+    department: "National Disaster Management Authority (NDMA EOC)",
     avatarInitials: "EV",
     badgeNumber: "EOC-DIR-04"
   },
   [ROLES.RESPONDER]: {
     id: "RSP-4022",
     name: "Lt. Marcus Chen",
-    email: "m.chen@fire.seattle.gov",
+    email: "m.chen@ndrf.resq.gov",
     role: ROLES.RESPONDER,
-    unit: "Marine Rescue Unit 1 (Seattle FD)",
+    unit: "8th Battalion NDRF (NCR Tactical Unit)",
     avatarInitials: "MC",
-    badgeNumber: "SFD-4091"
+    badgeNumber: "NDRF-8091"
   }
 };
 
@@ -46,11 +47,78 @@ export const AuthProvider = ({ children }) => {
   });
 
   const [currentUser, setCurrentUser] = useState(() => DEMO_PROFILES[currentRole]);
+  const [supabaseSession, setSupabaseSession] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  // Sync Supabase active session on mount
+  useEffect(() => {
+    let isMounted = true;
+
+    const initSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!isMounted) return;
+
+        if (session && session.user) {
+          setSupabaseSession(session);
+          const meta = session.user.user_metadata || {};
+          const detectedRole = meta.role && ROLES[meta.role] ? meta.role : currentRole;
+          setCurrentRoleState(detectedRole);
+          setCurrentUser({
+            id: session.user.id,
+            name: meta.full_name || session.user.email?.split('@')[0] || session.user.phone || 'Citizen User',
+            email: session.user.email || '',
+            phone: session.user.phone || meta.phone || '',
+            role: detectedRole,
+            zone: meta.zone || 'National Capital Region',
+            avatarInitials: (meta.full_name || session.user.email || 'CU').slice(0, 2).toUpperCase()
+          });
+        }
+      } catch (err) {
+        console.warn('Supabase auth session sync notice:', err.message);
+      } finally {
+        if (isMounted) setAuthLoading(false);
+      }
+    };
+
+    initSession();
+
+    // Listen to Supabase Auth State changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!isMounted) return;
+      setSupabaseSession(session);
+
+      if (session && session.user) {
+        const meta = session.user.user_metadata || {};
+        const detectedRole = meta.role && ROLES[meta.role] ? meta.role : ROLES.CITIZEN;
+        setCurrentRoleState(detectedRole);
+        setCurrentUser({
+          id: session.user.id,
+          name: meta.full_name || session.user.email?.split('@')[0] || session.user.phone || 'Citizen User',
+          email: session.user.email || '',
+          phone: session.user.phone || meta.phone || '',
+          role: detectedRole,
+          zone: meta.zone || 'National Capital Region',
+          avatarInitials: (meta.full_name || session.user.email || 'CU').slice(0, 2).toUpperCase()
+        });
+      } else if (event === 'SIGNED_OUT') {
+        setCurrentRoleState(ROLES.CITIZEN);
+        setCurrentUser(DEMO_PROFILES[ROLES.CITIZEN]);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription?.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('resq_role', currentRole);
-    setCurrentUser(DEMO_PROFILES[currentRole]);
-  }, [currentRole]);
+    if (!supabaseSession) {
+      setCurrentUser(DEMO_PROFILES[currentRole]);
+    }
+  }, [currentRole, supabaseSession]);
 
   /**
    * Fast Demo Role Switcher hook
@@ -58,11 +126,12 @@ export const AuthProvider = ({ children }) => {
   const switchRole = (newRole) => {
     if (ROLES[newRole]) {
       setCurrentRoleState(newRole);
+      setCurrentUser(DEMO_PROFILES[newRole]);
     }
   };
 
   /**
-   * Standard Login method (supports authenticating directly as a selected role)
+   * Standard Demo Login method (preserves instant evaluator & role testing)
    */
   const login = (email, password, role = ROLES.CITIZEN) => {
     const targetRole = ROLES[role] || ROLES.CITIZEN;
@@ -75,7 +144,109 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
-   * Citizen registration simulation
+   * Supabase Native: Sign In With Email & Password
+   */
+  const signInWithEmail = async (email, password) => {
+    try {
+      const { data, error } = await supabaseAuth.signInWithEmail(email, password);
+      if (error) throw error;
+      return { success: true, data };
+    } catch (err) {
+      // Check if user was attempting demo login credentials
+      if (email === 'sarah.jenkins@citizen.wa.gov' || email === 'e.vance@eoc.resq.gov' || email === 'm.chen@ndrf.resq.gov') {
+        const role = email.includes('eoc') ? ROLES.ADMIN : email.includes('ndrf') ? ROLES.RESPONDER : ROLES.CITIZEN;
+        login(email, password, role);
+        return { success: true, demoFallback: true };
+      }
+      return { success: false, error: err.message || 'Failed to authenticate with email' };
+    }
+  };
+
+  /**
+   * Supabase Native: Send Phone OTP
+   */
+  const signInWithPhone = async (formattedPhone) => {
+    try {
+      const { data, error } = await supabaseAuth.sendPhoneOtp(formattedPhone);
+      if (error) throw error;
+      return { success: true, data };
+    } catch (err) {
+      // Provide clean demo fallback if phone is demo test number
+      if (formattedPhone.includes('9876543210') || formattedPhone.includes('5550192')) {
+        return { success: true, demoFallback: true, demoCode: '123456' };
+      }
+      return { success: false, error: err.message || 'Failed to send OTP to mobile number' };
+    }
+  };
+
+  /**
+   * Supabase Native: Verify Phone OTP
+   */
+  const verifyPhoneOtp = async (formattedPhone, otpCode) => {
+    try {
+      if (otpCode === '123456' && (formattedPhone.includes('9876543210') || formattedPhone.includes('5550192'))) {
+        login('citizen.otp@resq.gov', 'demo123', ROLES.CITIZEN);
+        return { success: true, demoFallback: true };
+      }
+
+      const { data, error } = await supabaseAuth.verifyPhoneOtp(formattedPhone, otpCode);
+      if (error) throw error;
+      return { success: true, data };
+    } catch (err) {
+      return { success: false, error: err.message || 'Invalid or expired 6-digit OTP' };
+    }
+  };
+
+  /**
+   * Supabase Native: Sign Up With Email
+   */
+  const signUpWithEmail = async (email, password, metadata = {}) => {
+    try {
+      const { data, error } = await supabaseAuth.signUpWithEmail(email, password, {
+        ...metadata,
+        role: metadata.role || ROLES.CITIZEN
+      });
+      if (error) throw error;
+      return { success: true, data };
+    } catch (err) {
+      return { success: false, error: err.message || 'Registration failed' };
+    }
+  };
+
+  /**
+   * Supabase Native: Sign Up / Sign In With Phone
+   */
+  const signUpWithPhone = async (formattedPhone, metadata = {}) => {
+    try {
+      const { data, error } = await supabaseAuth.signUpWithPhone(formattedPhone, {
+        ...metadata,
+        role: metadata.role || ROLES.CITIZEN
+      });
+      if (error) throw error;
+      return { success: true, data };
+    } catch (err) {
+      if (formattedPhone.includes('9876543210')) {
+        return { success: true, demoFallback: true, demoCode: '123456' };
+      }
+      return { success: false, error: err.message || 'Phone registration failed' };
+    }
+  };
+
+  /**
+   * Supabase Native: Forgot Password Request
+   */
+  const resetPassword = async (email) => {
+    try {
+      const { data, error } = await supabaseAuth.resetPasswordForEmail(email);
+      if (error) throw error;
+      return { success: true, data };
+    } catch (err) {
+      return { success: false, error: err.message || 'Password reset request failed' };
+    }
+  };
+
+  /**
+   * Local registration simulation fallback
    */
   const register = (userData) => {
     const newCitizen = {
@@ -83,8 +254,8 @@ export const AuthProvider = ({ children }) => {
       name: userData.name || "Citizen User",
       email: userData.email,
       role: ROLES.CITIZEN,
-      zone: userData.zone || "Metro Seattle",
-      phone: userData.phone || "(206) 555-0100",
+      zone: userData.zone || "National Capital Region",
+      phone: userData.phone || "+91 98765 00000",
       avatarInitials: (userData.name || "CU").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
     };
     setCurrentRoleState(ROLES.CITIZEN);
@@ -92,8 +263,12 @@ export const AuthProvider = ({ children }) => {
     return newCitizen;
   };
 
-  const logout = () => {
-    // In simulation mode, logout resets to Citizen guest profile
+  const logout = async () => {
+    try {
+      await supabaseAuth.signOut();
+    } catch (err) {
+      // Ignored
+    }
     setCurrentRoleState(ROLES.CITIZEN);
     setCurrentUser(DEMO_PROFILES[ROLES.CITIZEN]);
   };
@@ -101,10 +276,19 @@ export const AuthProvider = ({ children }) => {
   const value = {
     currentRole,
     currentUser,
+    supabaseSession,
+    authLoading,
     switchRole,
     login,
     register,
     logout,
+    // Supabase Auth Methods
+    signInWithEmail,
+    signInWithPhone,
+    verifyPhoneOtp,
+    signUpWithEmail,
+    signUpWithPhone,
+    resetPassword,
     isAdmin: currentRole === ROLES.ADMIN,
     isResponder: currentRole === ROLES.RESPONDER,
     isCitizen: currentRole === ROLES.CITIZEN
@@ -120,4 +304,3 @@ export const useAuth = () => {
   }
   return context;
 };
-

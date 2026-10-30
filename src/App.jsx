@@ -15,8 +15,7 @@ import { AlertsPage } from './pages/public/AlertsPage';
 import { ShelterFinderPage } from './pages/public/ShelterFinderPage';
 import { ReportEmergencyPage } from './pages/citizen/ReportEmergencyPage';
 import { CitizenReportsPage } from './pages/citizen/CitizenReportsPage';
-import { CitizenLoginPage } from './pages/auth/CitizenLoginPage';
-import { OfficialLoginPage } from './pages/auth/OfficialLoginPage';
+import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 
 // Admin Pages
@@ -42,8 +41,8 @@ export default function App() {
               <Route path="shelters" element={<ShelterFinderPage />} />
               <Route path="report" element={<ReportEmergencyPage />} />
               <Route path="my-reports" element={<CitizenReportsPage />} />
-              <Route path="login" element={<CitizenLoginPage />} />
-              <Route path="official-login" element={<OfficialLoginPage />} />
+              <Route path="login" element={<LoginPage />} />
+              <Route path="official-login" element={<LoginPage />} />
               <Route path="register" element={<RegisterPage />} />
             </Route>
 

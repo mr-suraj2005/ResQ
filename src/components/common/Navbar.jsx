@@ -164,26 +164,16 @@ export const Navbar = () => {
                 {currentRole}
               </span>
 
-              {/* Citizen Login Link */}
+              {/* Unified Sign In Link */}
               <Link 
                 to="/login" 
                 className="btn btn-ghost btn-xs" 
-                style={{ color: '#CBD5E1', padding: '0.35rem 0.55rem', borderRadius: 'var(--radius-pill)' }}
-                title="Citizen Portal Login"
+                style={{ color: '#E2E8F0', padding: '0.35rem 0.65rem', borderRadius: 'var(--radius-pill)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                title="Sign In with Email or Mobile Number"
                 onClick={closeMenu}
               >
-                <User size={14} />
-              </Link>
-
-              {/* Official Command Login Link */}
-              <Link 
-                to="/official-login" 
-                className="btn btn-ghost btn-xs" 
-                style={{ color: '#93C5FD', padding: '0.35rem 0.55rem', borderRadius: 'var(--radius-pill)', border: '1px solid rgba(147, 197, 253, 0.25)' }}
-                title="Official Command & Dispatch Portal"
-                onClick={closeMenu}
-              >
-                <Shield size={14} />
+                <LogIn size={14} />
+                <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>Sign In</span>
               </Link>
             </div>
 
