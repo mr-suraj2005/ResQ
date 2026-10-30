@@ -7,6 +7,20 @@ import { initialBlockedRoads, initialResponseResources } from '../data/tacticalL
 import { incidentService } from '../services/incidentService';
 import { alertService } from '../services/alertService';
 import { resourceService } from '../services/resourceService';
+import { 
+  testSupabaseConnection,
+  fetchRemoteIncidents,
+  insertRemoteIncident,
+  updateRemoteIncident,
+  fetchRemoteAlerts,
+  insertRemoteAlert,
+  fetchRemoteShelters,
+  updateRemoteShelter,
+  fetchRemoteBlockedRoads,
+  fetchRemoteResponseResources,
+  invokeAICrisisAnalysis,
+  supabaseConfig
+} from '../services/supabaseClient';
 
 const EmergencyDataContext = createContext(null);
 
@@ -20,6 +34,10 @@ const STORAGE_KEYS = {
 };
 
 export const EmergencyDataProvider = ({ children }) => {
+  // Supabase Backend Status: 'CONNECTING' | 'CONNECTED' | 'CONNECTED_PENDING_SCHEMA' | 'OFFLINE'
+  const [supabaseStatus, setSupabaseStatus] = useState('CONNECTING');
+  const [supabaseMessage, setSupabaseMessage] = useState('Initializing Supabase client...');
+
   // Load state from localStorage or initial seed
   const [incidents, setIncidents] = useState(() => {
     try {
@@ -77,7 +95,55 @@ export const EmergencyDataProvider = ({ children }) => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Sync to localStorage
+  // Initialize and synchronise Supabase remote state on startup
+  useEffect(() => {
+    let isMounted = true;
+    const initSupabase = async () => {
+      try {
+        const res = await testSupabaseConnection();
+        if (!isMounted) return;
+
+        if (res.connected && res.tablesFound) {
+          setSupabaseStatus('CONNECTED');
+          setSupabaseMessage('Connected to Supabase PostgreSQL & Real-time Layer');
+
+          // Fetch remote records
+          const [remoteInc, remoteAlt, remoteShl, remoteRds, remoteRes] = await Promise.all([
+            fetchRemoteIncidents(),
+            fetchRemoteAlerts(),
+            fetchRemoteShelters(),
+            fetchRemoteBlockedRoads(),
+            fetchRemoteResponseResources()
+          ]);
+
+          if (!isMounted) return;
+          if (remoteInc && remoteInc.length > 0) setIncidents(remoteInc);
+          if (remoteAlt && remoteAlt.length > 0) setAlerts(remoteAlt);
+          if (remoteShl && remoteShl.length > 0) setShelters(remoteShl);
+          if (remoteRds && remoteRds.length > 0) setBlockedRoads(remoteRds);
+          if (remoteRes && remoteRes.length > 0) setResponseResources(remoteRes);
+        } else if (res.connected) {
+          setSupabaseStatus('CONNECTED_PENDING_SCHEMA');
+          setSupabaseMessage('Connected to Supabase project vgwpwhgltnrjzfclmzlw. Tables pending SQL migration.');
+        } else {
+          setSupabaseStatus('OFFLINE');
+          setSupabaseMessage('Supabase offline or unreachable. Using local cache.');
+        }
+      } catch (err) {
+        if (!isMounted) return;
+        setSupabaseStatus('OFFLINE');
+        setSupabaseMessage('Local reactive fallback active.');
+      }
+    };
+
+    initSupabase();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Sync to localStorage as fail-safe cache
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.INCIDENTS, JSON.stringify(incidents));
   }, [incidents]);
@@ -103,18 +169,21 @@ export const EmergencyDataProvider = ({ children }) => {
   }, [responseResources]);
 
   /* =========================================================================
-     CROSS-ROLE REACTIVE MUTATIONS (VIA SERVICE ADAPTERS)
+     CROSS-ROLE REACTIVE MUTATIONS (HYBRID LOCAL + SUPABASE BACKEND)
      ========================================================================= */
 
   /**
    * 1. Citizen submits emergency report
-   * Reactivity: Immediately reflects in /my-reports and /admin/incidents as PENDING_REVIEW
    */
   const reportIncident = async (reportDto) => {
     setIsSubmitting(true);
     try {
       const created = await incidentService.create(reportDto);
       setIncidents(prev => [created, ...prev]);
+
+      // Synchronise to Supabase in background
+      insertRemoteIncident(created).catch(() => {});
+
       return created;
     } finally {
       setIsSubmitting(false);
@@ -123,7 +192,6 @@ export const EmergencyDataProvider = ({ children }) => {
 
   /**
    * 2. Admin verifies an incident
-   * Reactivity: Updates status to VERIFIED, adds note, immediately shows on map and feeds
    */
   const verifyIncident = async (incidentId, adminName) => {
     setIsSubmitting(true);
@@ -134,12 +202,17 @@ export const EmergencyDataProvider = ({ children }) => {
           return {
             ...inc,
             verified: true,
+            isVerified: true,
             status: inc.status === 'PENDING_REVIEW' ? 'VERIFIED' : inc.status,
-            notes: [...inc.notes, result.note]
+            notes: [...(inc.notes || []), result.note]
           };
         }
         return inc;
       }));
+
+      // Synchronise to Supabase
+      updateRemoteIncident(incidentId, { isVerified: true, status: 'VERIFIED' }).catch(() => {});
+
       return true;
     } finally {
       setIsSubmitting(false);
@@ -158,12 +231,17 @@ export const EmergencyDataProvider = ({ children }) => {
           return {
             ...inc,
             verified: false,
+            isVerified: false,
             status: 'REJECTED',
-            notes: [...inc.notes, result.note]
+            notes: [...(inc.notes || []), result.note]
           };
         }
         return inc;
       }));
+
+      // Synchronise to Supabase
+      updateRemoteIncident(incidentId, { isVerified: false, status: 'REJECTED' }).catch(() => {});
+
       return true;
     } finally {
       setIsSubmitting(false);
@@ -172,7 +250,6 @@ export const EmergencyDataProvider = ({ children }) => {
 
   /**
    * 4. Admin assigns responder unit
-   * Reactivity: Status becomes DISPATCHED, populates in /responder portal for that unit
    */
   const assignUnit = async (incidentId, unitName, adminName) => {
     setIsSubmitting(true);
@@ -184,11 +261,15 @@ export const EmergencyDataProvider = ({ children }) => {
             ...inc,
             assignedUnit: result.assignedUnit,
             status: 'DISPATCHED',
-            notes: [...inc.notes, result.note]
+            notes: [...(inc.notes || []), result.note]
           };
         }
         return inc;
       }));
+
+      // Synchronise to Supabase
+      updateRemoteIncident(incidentId, { assignedUnit: unitName, status: 'DISPATCHED' }).catch(() => {});
+
       return true;
     } finally {
       setIsSubmitting(false);
@@ -197,22 +278,27 @@ export const EmergencyDataProvider = ({ children }) => {
 
   /**
    * 5. Responder updates tactical status and field notes
-   * Reactivity: Immediately updates status in /my-reports and /admin timeline
    */
   const updateIncidentTacticalStatus = async (incidentId, newStatus, fieldNote, responderName) => {
     setIsSubmitting(true);
     try {
       const result = await incidentService.updateStatus(incidentId, newStatus, fieldNote, responderName);
+      let updatedNotes = [];
       setIncidents(prev => prev.map(inc => {
         if (inc.id === incidentId) {
+          updatedNotes = result.note ? [...(inc.notes || []), result.note] : (inc.notes || []);
           return {
             ...inc,
             status: result.status,
-            notes: result.note ? [...inc.notes, result.note] : inc.notes
+            notes: updatedNotes
           };
         }
         return inc;
       }));
+
+      // Synchronise to Supabase
+      updateRemoteIncident(incidentId, { status: newStatus, fieldNotes: updatedNotes }).catch(() => {});
+
       return true;
     } finally {
       setIsSubmitting(false);
@@ -221,13 +307,16 @@ export const EmergencyDataProvider = ({ children }) => {
 
   /**
    * 6. Admin publishes an official alert
-   * Reactivity: Immediately appears in /alerts and top AlertBanner across public portal
    */
   const createAlert = async (alertDto) => {
     setIsSubmitting(true);
     try {
       const newAlert = await alertService.create(alertDto);
       setAlerts(prev => [newAlert, ...prev]);
+
+      // Synchronise to Supabase
+      insertRemoteAlert(newAlert).catch(() => {});
+
       return newAlert;
     } finally {
       setIsSubmitting(false);
@@ -256,6 +345,8 @@ export const EmergencyDataProvider = ({ children }) => {
       if (s.id === shelterId) {
         const occ = newOccupancy !== undefined ? Number(newOccupancy) : s.occupancy;
         const stat = newStatus || (occ >= s.capacity ? 'FULL' : occ >= s.capacity * 0.85 ? 'NEAR_CAPACITY' : 'OPEN');
+        // Synchronise to Supabase
+        updateRemoteShelter(shelterId, { occupancy: occ, status: stat }).catch(() => {});
         return { ...s, occupancy: occ, status: stat };
       }
       return s;
@@ -295,10 +386,10 @@ export const EmergencyDataProvider = ({ children }) => {
   };
 
   // Precomputed Executive KPI metrics
-  const activeAlerts = alerts.filter(a => a.active);
+  const activeAlerts = alerts.filter(a => a.active !== false);
   const criticalAlerts = activeAlerts.filter(a => a.severity === 'CRITICAL');
   const activeIncidents = incidents.filter(i => i.status !== 'RESOLVED' && i.status !== 'REJECTED');
-  const pendingIncidents = incidents.filter(i => i.status === 'PENDING_REVIEW');
+  const pendingIncidents = incidents.filter(i => i.status === 'PENDING_REVIEW' || !i.isVerified);
   const openShelters = shelters.filter(s => s.status === 'OPEN' || s.status === 'NEAR_CAPACITY');
   const deployedUnits = incidents.filter(i => i.assignedUnit && i.status !== 'RESOLVED').length;
 
@@ -310,6 +401,11 @@ export const EmergencyDataProvider = ({ children }) => {
     blockedRoads,
     responseResources,
     isSubmitting,
+    // Supabase Backend Status & Utilities
+    supabaseStatus,
+    supabaseMessage,
+    supabaseConfig,
+    invokeAICrisisAnalysis,
     // Actions
     reportIncident,
     verifyIncident,
@@ -344,4 +440,3 @@ export const useEmergencyData = () => {
   }
   return context;
 };
-
