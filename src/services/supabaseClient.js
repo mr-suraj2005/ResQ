@@ -380,3 +380,79 @@ export async function invokeAICrisisAnalysis(contextPayload) {
     };
   }
 }
+
+// =============================================================================
+// SUPABASE AUTH UTILITIES & COUNTRY CODE DEFINITIONS
+// =============================================================================
+
+export const COUNTRY_CODES = [
+  { code: '+91', country: 'India', flag: '🇮🇳', maxDigits: 10 },
+  { code: '+1', country: 'US / Canada', flag: '🇺🇸', maxDigits: 10 },
+  { code: '+44', country: 'United Kingdom', flag: '🇬🇧', maxDigits: 10 },
+  { code: '+971', country: 'United Arab Emirates', flag: '🇦🇪', maxDigits: 9 },
+  { code: '+65', country: 'Singapore', flag: '🇸🇬', maxDigits: 8 },
+  { code: '+61', country: 'Australia', flag: '🇦🇺', maxDigits: 9 },
+  { code: '+49', country: 'Germany', flag: '🇩🇪', maxDigits: 11 },
+  { code: '+33', country: 'France', flag: '🇫🇷', maxDigits: 9 },
+  { code: '+81', country: 'Japan', flag: '🇯🇵', maxDigits: 10 },
+  { code: '+966', country: 'Saudi Arabia', flag: '🇸🇦', maxDigits: 9 }
+];
+
+export function formatE164Phone(countryCode, nationalNumber) {
+  const digits = (nationalNumber || '').replace(/\D/g, '');
+  const prefix = (countryCode || '+91').replace(/\D/g, '');
+  return `+${prefix}${digits}`;
+}
+
+export const supabaseAuth = {
+  async signInWithEmail(email, password) {
+    return await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password
+    });
+  },
+
+  async sendPhoneOtp(formattedPhone) {
+    return await supabase.auth.signInWithOtp({
+      phone: formattedPhone
+    });
+  },
+
+  async verifyPhoneOtp(formattedPhone, token) {
+    return await supabase.auth.verifyOtp({
+      phone: formattedPhone,
+      token: token.trim(),
+      type: 'sms'
+    });
+  },
+
+  async signUpWithEmail(email, password, metadata = {}) {
+    return await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        data: metadata
+      }
+    });
+  },
+
+  async signUpWithPhone(formattedPhone, metadata = {}) {
+    return await supabase.auth.signInWithOtp({
+      phone: formattedPhone,
+      options: {
+        data: metadata
+      }
+    });
+  },
+
+  async resetPasswordForEmail(email) {
+    return await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/login` : undefined
+    });
+  },
+
+  async signOut() {
+    return await supabase.auth.signOut();
+  }
+};
+
