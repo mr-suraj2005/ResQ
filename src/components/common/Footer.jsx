@@ -133,7 +133,7 @@ export const Footer = () => {
             </ul>
           </div>
 
-          {/* Col 4: Administrative */}
+          {/* Col 4: Operations */}
           <div>
             <h4 className="footer-col-title">Operations</h4>
             <ul className="footer-links">

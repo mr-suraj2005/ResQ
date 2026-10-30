@@ -43,6 +43,7 @@ export const AuthProvider = ({ children }) => {
   // Read initial role from localStorage if available, default to CITIZEN
   const [currentRole, setCurrentRoleState] = useState(() => {
     const saved = localStorage.getItem('resq_role');
+    if (saved === 'ADMIN' || saved === ROLES.ADMIN) return ROLES.CITIZEN;
     return saved && ROLES[saved] ? saved : ROLES.CITIZEN;
   });
 
@@ -122,10 +123,9 @@ export const AuthProvider = ({ children }) => {
    * Fast Demo Role Switcher hook
    */
   const switchRole = (newRole) => {
-    if (ROLES[newRole]) {
-      setCurrentRoleState(newRole);
-      setCurrentUser(DEMO_PROFILES[newRole]);
-    }
+    if (newRole !== ROLES.CITIZEN && newRole !== ROLES.RESPONDER) return;
+    setCurrentRoleState(newRole);
+    setCurrentUser(DEMO_PROFILES[newRole] || DEMO_PROFILES[ROLES.CITIZEN]);
   };
 
   /**
@@ -244,7 +244,7 @@ export const AuthProvider = ({ children }) => {
     signInWithPhone,
     verifyPhoneOtp,
     signUpWithPhone,
-    isAdmin: currentRole === ROLES.ADMIN,
+    isAdmin: false,
     isResponder: currentRole === ROLES.RESPONDER,
     isCitizen: currentRole === ROLES.CITIZEN
   };

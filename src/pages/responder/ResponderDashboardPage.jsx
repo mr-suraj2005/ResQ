@@ -404,7 +404,7 @@ export const ResponderDashboardPage = () => {
                 </button>
               </div>
               <div className="form-help">
-                Appended field notes update instantly in real time for citizen tracking and administrative review.
+                Appended field notes update instantly in real time for citizen tracking and dispatch review.
               </div>
             </form>
           </div>

@@ -304,7 +304,7 @@ export const RegisterPage = () => {
               <label className="form-label">
                 Account Designation / Role <span className="required">*</span>
               </label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
                 <button
                   type="button"
                   className={`btn btn-xs ${role === ROLES.CITIZEN ? 'btn-primary' : 'btn-outline'}`}
@@ -312,14 +312,6 @@ export const RegisterPage = () => {
                   onClick={() => setRole(ROLES.CITIZEN)}
                 >
                   Citizen
-                </button>
-                <button
-                  type="button"
-                  className={`btn btn-xs ${role === ROLES.ADMIN ? 'btn-primary' : 'btn-outline'}`}
-                  style={{ borderRadius: 'var(--radius-pill)', padding: '0.5rem 0.25rem', fontWeight: 700, fontSize: '0.72rem' }}
-                  onClick={() => setRole(ROLES.ADMIN)}
-                >
-                  EOC Admin
                 </button>
                 <button
                   type="button"

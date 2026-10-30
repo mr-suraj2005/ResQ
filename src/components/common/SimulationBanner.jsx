@@ -78,17 +78,6 @@ export const SimulationBanner = () => {
           <button
             type="button"
             role="radio"
-            aria-checked={currentRole === ROLES.ADMIN}
-            className={`role-switcher-btn ${currentRole === ROLES.ADMIN ? 'active' : ''}`}
-            onClick={() => switchRole(ROLES.ADMIN)}
-            title="Switch to Emergency Admin View"
-          >
-            Admin
-          </button>
-
-          <button
-            type="button"
-            role="radio"
             aria-checked={currentRole === ROLES.RESPONDER}
             className={`role-switcher-btn ${currentRole === ROLES.RESPONDER ? 'active' : ''}`}
             onClick={() => switchRole(ROLES.RESPONDER)}
