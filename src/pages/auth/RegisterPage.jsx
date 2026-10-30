@@ -147,9 +147,7 @@ export const RegisterPage = () => {
           zone
         });
 
-        if (role === ROLES.ADMIN) {
-          navigate('/admin');
-        } else if (role === ROLES.RESPONDER) {
+        if (role === ROLES.RESPONDER) {
           navigate('/responder');
         } else {
           navigate('/my-reports');

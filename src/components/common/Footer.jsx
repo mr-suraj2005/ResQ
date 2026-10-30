@@ -137,7 +137,6 @@ export const Footer = () => {
           <div>
             <h4 className="footer-col-title">Operations</h4>
             <ul className="footer-links">
-              <li><Link to="/admin" className="footer-link">EOC Administrator Portal</Link></li>
               <li><Link to="/responder" className="footer-link">Field Responder Terminal</Link></li>
               <li><Link to="/login" className="footer-link">Staff Authentication</Link></li>
               <li><span className="footer-link" style={{ cursor: 'default' }}>Spring Boot REST v1.4</span></li>

@@ -21,7 +21,7 @@ import {
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const { currentRole, currentUser, logout, isAdmin, isResponder, supabaseSession } = useAuth();
+  const { currentRole, currentUser, logout, isResponder, supabaseSession } = useAuth();
   const { criticalAlerts, pendingIncidents } = useEmergencyData();
   const navigate = useNavigate();
 
@@ -137,22 +137,6 @@ export const Navbar = () => {
                 <FileText size={15} strokeWidth={1.75} />
                 <span>My Reports</span>
               </NavLink>
-
-              {isAdmin && (
-                <NavLink 
-                  to="/admin" 
-                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-                  style={{ color: '#93C5FD' }}
-                >
-                  <Shield size={15} strokeWidth={1.75} />
-                  <span>Admin Console</span>
-                  {pendingIncidents.length > 0 && (
-                    <span className="sidebar-badge danger" style={{ marginLeft: '0.2rem', padding: '0.1rem 0.45rem', fontSize: '0.65rem' }}>
-                      {pendingIncidents.length}
-                    </span>
-                  )}
-                </NavLink>
-              )}
 
               {isResponder && (
                 <NavLink 
@@ -330,23 +314,6 @@ export const Navbar = () => {
                   <FileText size={18} strokeWidth={1.75} />
                   <span>My Reports</span>
                 </NavLink>
-
-                {isAdmin && (
-                  <NavLink 
-                    to="/admin" 
-                    className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-                    onClick={closeMenu}
-                    style={{ padding: '0.65rem 0.85rem', fontSize: '0.9rem', color: '#93C5FD' }}
-                  >
-                    <Shield size={18} strokeWidth={1.75} />
-                    <span style={{ flex: 1 }}>Admin Command Center</span>
-                    {pendingIncidents.length > 0 && (
-                      <span className="sidebar-badge danger" style={{ padding: '0.15rem 0.55rem' }}>
-                        {pendingIncidents.length}
-                      </span>
-                    )}
-                  </NavLink>
-                )}
 
                 {isResponder && (
                   <NavLink 

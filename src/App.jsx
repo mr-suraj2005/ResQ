@@ -5,7 +5,6 @@ import { EmergencyDataProvider } from './context/EmergencyDataContext';
 
 // Layouts
 import { MainLayout } from './layouts/MainLayout';
-import { AdminLayout } from './layouts/AdminLayout';
 import { ResponderLayout } from './layouts/ResponderLayout';
 
 // Public & Citizen Pages
@@ -17,12 +16,6 @@ import { ReportEmergencyPage } from './pages/citizen/ReportEmergencyPage';
 import { CitizenReportsPage } from './pages/citizen/CitizenReportsPage';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
-
-// Admin Pages
-import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
-import { IncidentManagementPage } from './pages/admin/IncidentManagementPage';
-import { AlertManagementPage } from './pages/admin/AlertManagementPage';
-import { ResourceManagementPage } from './pages/admin/ResourceManagementPage';
 
 // Responder Page
 import { ResponderDashboardPage } from './pages/responder/ResponderDashboardPage';
@@ -44,14 +37,6 @@ export default function App() {
               <Route path="login" element={<LoginPage />} />
               <Route path="official-login" element={<LoginPage />} />
               <Route path="register" element={<RegisterPage />} />
-            </Route>
-
-            {/* Administrator Portal */}
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboardPage />} />
-              <Route path="incidents" element={<IncidentManagementPage />} />
-              <Route path="alerts" element={<AlertManagementPage />} />
-              <Route path="resources" element={<ResourceManagementPage />} />
             </Route>
 
             {/* Emergency Responder Portal */}

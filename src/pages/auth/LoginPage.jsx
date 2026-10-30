@@ -111,9 +111,7 @@ export const LoginPage = () => {
       const res = await verifyPhoneOtp(formattedPhone, token);
       if (res.success) {
         const userRole = res.data?.session?.user?.user_metadata?.role;
-        if (userRole === ROLES.ADMIN) {
-          navigate('/admin');
-        } else if (userRole === ROLES.RESPONDER) {
+        if (userRole === ROLES.RESPONDER) {
           navigate('/responder');
         } else {
           navigate('/my-reports');
