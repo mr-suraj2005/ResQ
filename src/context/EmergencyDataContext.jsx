@@ -3,6 +3,7 @@ import { initialIncidents } from '../data/incidents';
 import { initialAlerts } from '../data/alerts';
 import { initialShelters } from '../data/shelters';
 import { initialInventory } from '../data/inventory';
+import { initialBlockedRoads, initialResponseResources } from '../data/tacticalLayers';
 import { incidentService } from '../services/incidentService';
 import { alertService } from '../services/alertService';
 import { resourceService } from '../services/resourceService';
@@ -13,7 +14,9 @@ const STORAGE_KEYS = {
   INCIDENTS: 'resq_incidents_v1',
   ALERTS: 'resq_alerts_v1',
   SHELTERS: 'resq_shelters_v1',
-  INVENTORY: 'resq_inventory_v1'
+  INVENTORY: 'resq_inventory_v1',
+  BLOCKED_ROADS: 'resq_blocked_roads_v1',
+  RESOURCES: 'resq_resources_v1'
 };
 
 export const EmergencyDataProvider = ({ children }) => {
@@ -54,6 +57,24 @@ export const EmergencyDataProvider = ({ children }) => {
     }
   });
 
+  const [blockedRoads, setBlockedRoads] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.BLOCKED_ROADS);
+      return saved ? JSON.parse(saved) : initialBlockedRoads;
+    } catch {
+      return initialBlockedRoads;
+    }
+  });
+
+  const [responseResources, setResponseResources] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.RESOURCES);
+      return saved ? JSON.parse(saved) : initialResponseResources;
+    } catch {
+      return initialResponseResources;
+    }
+  });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Sync to localStorage
@@ -72,6 +93,14 @@ export const EmergencyDataProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.INVENTORY, JSON.stringify(inventory));
   }, [inventory]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.BLOCKED_ROADS, JSON.stringify(blockedRoads));
+  }, [blockedRoads]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.RESOURCES, JSON.stringify(responseResources));
+  }, [responseResources]);
 
   /* =========================================================================
      CROSS-ROLE REACTIVE MUTATIONS (VIA SERVICE ADAPTERS)
@@ -255,10 +284,14 @@ export const EmergencyDataProvider = ({ children }) => {
     setAlerts(initialAlerts);
     setShelters(initialShelters);
     setInventory(initialInventory);
+    setBlockedRoads(initialBlockedRoads);
+    setResponseResources(initialResponseResources);
     localStorage.removeItem(STORAGE_KEYS.INCIDENTS);
     localStorage.removeItem(STORAGE_KEYS.ALERTS);
     localStorage.removeItem(STORAGE_KEYS.SHELTERS);
     localStorage.removeItem(STORAGE_KEYS.INVENTORY);
+    localStorage.removeItem(STORAGE_KEYS.BLOCKED_ROADS);
+    localStorage.removeItem(STORAGE_KEYS.RESOURCES);
   };
 
   // Precomputed Executive KPI metrics
@@ -274,6 +307,8 @@ export const EmergencyDataProvider = ({ children }) => {
     alerts,
     shelters,
     inventory,
+    blockedRoads,
+    responseResources,
     isSubmitting,
     // Actions
     reportIncident,

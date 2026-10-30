@@ -19,6 +19,7 @@ import { PageHeader } from '../../components/common/PageHeader';
 import { StatCard } from '../../components/common/StatCard';
 import { SeverityBadge } from '../../components/common/SeverityBadge';
 import { StatusBadge } from '../../components/common/StatusBadge';
+import { AIAnalysisPanel } from '../../components/ai/AIAnalysisPanel';
 import { 
   AlertOctagon, 
   Building2, 
@@ -163,6 +164,11 @@ export const AdminDashboardPage = () => {
             meta={`${totalShelterOccupancy} of ${totalShelterCapacity} beds occupied`}
           />
         </div>
+      </section>
+
+      {/* AI Situation Analysis Engine Overview */}
+      <section aria-label="AI Situational Intelligence" style={{ marginBottom: '2rem' }}>
+        <AIAnalysisPanel />
       </section>
 
       {/* Analytics Recharts Visualizations */}

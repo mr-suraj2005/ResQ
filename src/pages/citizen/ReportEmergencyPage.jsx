@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useEmergencyData } from '../../context/EmergencyDataContext';
 import { useAuth } from '../../context/AuthContext';
-import { PageHeader } from '../../components/common/PageHeader';
 import { ConfirmationDialog } from '../../components/common/ConfirmationDialog';
 import { LocationPickerMap } from '../../components/map/LocationPickerMap';
 import { 
@@ -11,96 +10,115 @@ import {
   Upload, 
   CheckCircle2, 
   X, 
-  ShieldAlert,
-  Flame,
-  Droplets,
-  HeartPulse,
-  Zap,
-  Building2,
-  FileText,
-  Navigation
+  Flame, 
+  Droplets, 
+  HeartPulse, 
+  Zap, 
+  Building2, 
+  Construction, 
+  LocateFixed, 
+  ChevronDown, 
+  ChevronUp, 
+  Users,
+  Camera,
+  Send
 } from 'lucide-react';
+
+const CATEGORY_CARDS = [
+  { id: 'FLOOD', label: 'Flood / Surge', icon: Droplets, color: '#1D4ED8', bg: '#DBEAFE' },
+  { id: 'FIRE', label: 'Fire / Smoke', icon: Flame, color: '#DC2626', bg: '#FEE2E2' },
+  { id: 'COLLAPSE', label: 'Collapse / Landslide', icon: Building2, color: '#D97706', bg: '#FEF3C7' },
+  { id: 'MEDICAL', label: 'Medical Trauma', icon: HeartPulse, color: '#15803D', bg: '#DCFCE7' },
+  { id: 'ROAD_BLOCK', label: 'Road Blocked', icon: Construction, color: '#475569', bg: '#E2E8F0' },
+  { id: 'POWER', label: 'Power / Hazard', icon: Zap, color: '#7C3AED', bg: '#EDE9FE' }
+];
+
+const PEOPLE_OPTIONS = [
+  { label: '1–5', value: 3, desc: 'Individual / Household' },
+  { label: '5–20', value: 12, desc: 'Small Group' },
+  { label: '20–50', value: 35, desc: 'Significant Crowd' },
+  { label: '50+ Mass Casualty', value: 65, desc: 'Critical Scale' }
+];
 
 export const ReportEmergencyPage = () => {
   const { reportIncident, isSubmitting } = useEmergencyData();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
-  // Initial Seattle Downtown coordinates
-  const [position, setPosition] = useState([47.6062, -122.3321]);
-  const [formData, setFormData] = useState({
-    title: '',
-    category: 'FLOOD',
-    severity: 'HIGH',
-    address: '4th Ave & Pike St, Seattle, WA',
-    description: '',
-    reportedBy: currentUser?.name || 'Sarah Jenkins (Citizen)'
-  });
+  // Step 1: WHAT
+  const [selectedCategory, setSelectedCategory] = useState('FLOOD');
+  const [severity, setSeverity] = useState('CRITICAL'); // 'CRITICAL' | 'HIGH'
 
+  // Step 2: WHERE
+  const [position, setPosition] = useState([47.6062, -122.3321]);
+  const [address, setAddress] = useState('4th Ave & Pike St, Seattle, WA');
+  const [isLocating, setIsLocating] = useState(false);
+
+  // Step 3: HOW MANY
+  const [peopleCount, setPeopleCount] = useState(12);
+
+  // Optional Collapsible Details
+  const [showOptionalDetails, setShowOptionalDetails] = useState(false);
+  const [customTitle, setCustomTitle] = useState('');
+  const [customDescription, setCustomDescription] = useState('');
   const [previewImage, setPreviewImage] = useState(null);
+
   const [createdIncident, setCreatedIncident] = useState(null);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
-  const [errors, setErrors] = useState({});
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: null }));
+  const handleUseCurrentLocation = () => {
+    setIsLocating(true);
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const newPos = [pos.coords.latitude, pos.coords.longitude];
+          setPosition(newPos);
+          setAddress(`GPS: ${pos.coords.latitude.toFixed(4)}° N, ${pos.coords.longitude.toFixed(4)}° W`);
+          setIsLocating(false);
+        },
+        () => {
+          // Fallback location
+          setPosition([47.6062, -122.3321]);
+          setAddress('Downtown Metro Emergency Zone, Seattle, WA');
+          setIsLocating(false);
+        },
+        { timeout: 5000 }
+      );
+    } else {
+      setIsLocating(false);
     }
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setErrors(prev => ({ ...prev, image: 'Image file size exceeds 5MB limit.' }));
-        return;
-      }
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewImage(reader.result);
-        setErrors(prev => ({ ...prev, image: null }));
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const validate = () => {
-    const errs = {};
-    if (!formData.title.trim()) {
-      errs.title = 'Incident title is required. Please provide a concise summary.';
-    } else if (formData.title.trim().length < 6) {
-      errs.title = 'Incident summary must be at least 6 characters.';
-    }
-
-    if (!formData.address.trim()) {
-      errs.address = 'Street address or landmark is required for dispatch geolocation.';
-    }
-
-    if (!formData.description.trim()) {
-      errs.description = 'Please describe the emergency conditions, hazards, and any people in need of aid.';
-    } else if (formData.description.trim().length < 15) {
-      errs.description = 'Description is too brief (minimum 15 characters required).';
-    }
-
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+
+    const categoryItem = CATEGORY_CARDS.find(c => c.id === selectedCategory) || CATEGORY_CARDS[0];
+    const generatedTitle = customTitle.trim() || `${categoryItem.label} Reported at ${address.split(',')[0]}`;
+    const generatedDescription = customDescription.trim() || 
+      `Immediate citizen report for ${categoryItem.label}. Estimated ${peopleCount} people in proximity or need of assistance. Lat/Lng: ${position[0].toFixed(4)}, ${position[1].toFixed(4)}.`;
 
     const payload = {
-      ...formData,
+      title: generatedTitle,
+      category: selectedCategory === 'COLLAPSE' ? 'INFRASTRUCTURE' : (selectedCategory === 'ROAD_BLOCK' ? 'INFRASTRUCTURE' : selectedCategory),
+      severity,
+      address,
       latitude: position[0],
       longitude: position[1],
+      peopleAffected: peopleCount,
+      description: generatedDescription,
       imageUrl: previewImage,
-      reportedBy: currentUser?.name || 'Citizen Report'
+      reportedBy: currentUser?.name || 'Citizen User'
     };
 
     const result = await reportIncident(payload);
@@ -109,271 +127,363 @@ export const ReportEmergencyPage = () => {
   };
 
   return (
-    <div className="container-narrow page-container">
-      <PageHeader
-        title="Report an Emergency Incident"
-        subtitle="Broadcast verified situational telemetry to the Emergency Operations Center and immediate local first responders."
-        breadcrumb="CITIZEN PORTAL / REPORT INCIDENT"
-      />
-
+    <div className="container-narrow page-container" style={{ maxWidth: '640px', paddingTop: '1.25rem', paddingBottom: '3rem' }}>
+      
       {/* High-Contrast Civic Advisory Alert */}
       <div 
         style={{
-          backgroundColor: 'var(--color-emergency-50)',
-          border: '1px solid var(--color-emergency-200)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '1rem 1.25rem',
-          marginBottom: '1.75rem',
+          backgroundColor: '#FEF2F2',
+          border: '1px solid #FECACA',
+          borderRadius: 'var(--radius-pill)',
+          padding: '0.65rem 1.25rem',
+          marginBottom: '1.25rem',
           display: 'flex',
           alignItems: 'center',
-          gap: '0.85rem'
+          justifyContent: 'space-between',
+          gap: '0.75rem'
         }}
       >
-        <AlertTriangle size={22} color="var(--color-emergency-600)" style={{ flexShrink: 0 }} />
-        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-emergency-800)', lineHeight: 1.5 }}>
-          <strong>Critical Life Safety Reminder:</strong> For immediate structure fires, life-threatening medical emergencies, or disaster distress, call <strong>112 (National Emergency Number)</strong> or <strong>1078 (NDMA Helpline)</strong> immediately. This portal is synchronized with interagency CAD for community hazard mapping and priority queuing.
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: 'var(--text-xs)', color: '#991B1B', fontWeight: 600 }}>
+          <AlertTriangle size={16} color="#DC2626" style={{ flexShrink: 0 }} />
+          <span>Life-Threatening Distress? Call Central Helpline:</span>
+        </div>
+        <div style={{ display: 'flex', gap: '0.4rem' }}>
+          <a href="tel:112" className="btn btn-xs" style={{ backgroundColor: '#DC2626', color: '#FFFFFF', borderRadius: 'var(--radius-pill)', fontWeight: 800 }}>
+            112
+          </a>
+          <a href="tel:1078" className="btn btn-xs" style={{ backgroundColor: '#D97706', color: '#FFFFFF', borderRadius: 'var(--radius-pill)', fontWeight: 800 }}>
+            1078
+          </a>
         </div>
       </div>
 
-      {/* Form Container */}
-      <form onSubmit={handleSubmit} className="card" style={{ padding: '2rem' }} noValidate>
-        {/* Incident Summary */}
-        <div className="form-group">
-          <label className="form-label" htmlFor="title">
-            Incident Headline / Summary <span className="required">*</span>
-          </label>
-          <input
-            id="title"
-            name="title"
-            type="text"
-            className="form-input"
-            placeholder="e.g. Seawall Overwash &amp; Commercial Basement Submerged"
-            value={formData.title}
-            onChange={handleChange}
-            aria-invalid={Boolean(errors.title)}
-            aria-describedby={errors.title ? 'title-error' : undefined}
-          />
-          {errors.title && (
-            <div id="title-error" className="form-error">
-              <AlertTriangle size={12} />
-              <span>{errors.title}</span>
-            </div>
-          )}
+      {/* Main 3-Step Rapid SOS Form */}
+      <form 
+        onSubmit={handleSubmit} 
+        className="card" 
+        style={{ 
+          padding: '1.75rem', 
+          borderRadius: 'var(--radius-lg)', 
+          border: '1px solid var(--color-border)',
+          boxShadow: 'var(--shadow-md)'
+        }}
+      >
+        <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
+          <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 900, color: 'var(--color-neutral-900)', letterSpacing: '-0.02em' }}>
+            Instant Citizen Emergency Report
+          </h1>
+          <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-neutral-500)', marginTop: '0.2rem' }}>
+            3 rapid steps &bull; Dispatches priority alert to Unified EOC &amp; local units
+          </p>
         </div>
 
-        {/* Category & Severity Grid */}
-        <div className="grid-2">
-          <div className="form-group">
-            <label className="form-label" htmlFor="category">
-              Disaster Classification <span className="required">*</span>
-            </label>
-            <select
-              id="category"
-              name="category"
-              className="form-select"
-              value={formData.category}
-              onChange={handleChange}
-            >
-              <option value="FLOOD">Flooding &amp; Seawall Inundation</option>
-              <option value="FIRE">Structural Fire / Wildfire</option>
-              <option value="HAZMAT">Chemical Spill / Hazardous Materials</option>
-              <option value="INFRASTRUCTURE">Roadway / Bridge Failure</option>
-              <option value="POWER">Power Grid Blackout / Downed Lines</option>
-              <option value="MEDICAL">Mass Casualty / Health Emergency</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label className="form-label" htmlFor="severity">
-              Assessed Threat Severity <span className="required">*</span>
-            </label>
-            <select
-              id="severity"
-              name="severity"
-              className="form-select"
-              value={formData.severity}
-              onChange={handleChange}
-            >
-              <option value="CRITICAL">Critical (Immediate Danger to Human Life)</option>
-              <option value="HIGH">High (Major Property Damage / Evacuation)</option>
-              <option value="MODERATE">Moderate (Localized Disruptions)</option>
-              <option value="LOW">Low (Minor Advisory / Non-Trauma)</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Address and Interactive Location Picker Map */}
-        <div className="form-group">
-          <label className="form-label" htmlFor="address">
-            Street Address or Landmark <span className="required">*</span>
-          </label>
-          <input
-            id="address"
-            name="address"
-            type="text"
-            className="form-input"
-            placeholder="e.g. Alaskan Way &amp; Pier 55, Seattle, WA"
-            value={formData.address}
-            onChange={handleChange}
-            aria-invalid={Boolean(errors.address)}
-            aria-describedby={errors.address ? 'address-error' : undefined}
-          />
-          {errors.address && (
-            <div id="address-error" className="form-error">
-              <AlertTriangle size={12} />
-              <span>{errors.address}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Location Picker Map */}
-        <div className="form-group">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-            <label className="form-label" style={{ marginBottom: 0 }}>
-              Dispatch Pin Placement (Click on Map or Drag Marker)
-            </label>
-            <span className="mono-coord">
-              {position[0].toFixed(4)}° N, {position[1].toFixed(4)}° W
+        {/* =========================================================================
+            STEP 1: WHAT (2x3 Visual Category Grid + Priority Switch)
+            ========================================================================= */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem' }}>
+            <span style={{ fontSize: 'var(--text-xs)', fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-primary-900)', letterSpacing: '0.04em' }}>
+              Step 1: What is the Emergency?
             </span>
-          </div>
 
-          <LocationPickerMap
-            position={position}
-            onChange={(newPos) => setPosition(newPos)}
-            onAddressResolve={(resolved) => {
-              if (!formData.address || formData.address.startsWith('GPS:')) {
-                setFormData(prev => ({ ...prev, address: resolved }));
-              }
-            }}
-            height="220px"
-          />
-          <div className="form-help">
-            Clicking on the map automatically repositions the dispatch pin and syncs coordinates.
-          </div>
-        </div>
-
-        {/* Narrative Description */}
-        <div className="form-group">
-          <label className="form-label" htmlFor="description">
-            Hazard Description &amp; Field Observations <span className="required">*</span>
-          </label>
-          <textarea
-            id="description"
-            name="description"
-            className="form-textarea"
-            rows="4"
-            placeholder="Describe what is occurring, whether people or animals are trapped, water depth, smoke direction, or utilities affected..."
-            value={formData.description}
-            onChange={handleChange}
-            aria-invalid={Boolean(errors.description)}
-            aria-describedby={errors.description ? 'desc-error' : undefined}
-          />
-          {errors.description && (
-            <div id="desc-error" className="form-error">
-              <AlertTriangle size={12} />
-              <span>{errors.description}</span>
+            {/* Critical vs High Toggle */}
+            <div style={{ display: 'flex', gap: '0.35rem', backgroundColor: 'var(--color-neutral-100)', padding: '3px', borderRadius: 'var(--radius-pill)' }}>
+              <button
+                type="button"
+                onClick={() => setSeverity('CRITICAL')}
+                style={{
+                  padding: '0.25rem 0.65rem',
+                  border: 'none',
+                  borderRadius: 'var(--radius-pill)',
+                  backgroundColor: severity === 'CRITICAL' ? '#DC2626' : 'transparent',
+                  color: severity === 'CRITICAL' ? '#FFFFFF' : 'var(--color-neutral-600)',
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                CRITICAL
+              </button>
+              <button
+                type="button"
+                onClick={() => setSeverity('HIGH')}
+                style={{
+                  padding: '0.25rem 0.65rem',
+                  border: 'none',
+                  borderRadius: 'var(--radius-pill)',
+                  backgroundColor: severity === 'HIGH' ? '#D97706' : 'transparent',
+                  color: severity === 'HIGH' ? '#FFFFFF' : 'var(--color-neutral-600)',
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                HIGH
+              </button>
             </div>
-          )}
-        </div>
+          </div>
 
-        {/* Image File Upload with Instant Thumbnail Preview */}
-        <div className="form-group">
-          <label className="form-label">Attach Scene Photo (Optional)</label>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-            <label className="btn btn-outline btn-sm" style={{ cursor: 'pointer' }}>
-              <Upload size={14} />
-              <span>Choose Image File...</span>
-              <input
-                type="file"
-                accept="image/png, image/jpeg, image/webp"
-                onChange={handleImageChange}
-                style={{ display: 'none' }}
-              />
-            </label>
+          {/* 2x3 Visual Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.65rem' }}>
+            {CATEGORY_CARDS.map((cat) => {
+              const Icon = cat.icon;
+              const isSelected = selectedCategory === cat.id;
 
-            {previewImage && (
-              <div style={{ position: 'relative', display: 'inline-block' }}>
-                <img
-                  src={previewImage}
-                  alt="Incident Scene Thumbnail Preview"
-                  style={{
-                    width: 70,
-                    height: 70,
-                    objectFit: 'cover',
-                    borderRadius: 'var(--radius-sm)',
-                    border: '1px solid var(--color-border)',
-                    boxShadow: 'var(--shadow-xs)'
-                  }}
-                />
+              return (
                 <button
+                  key={cat.id}
                   type="button"
-                  onClick={() => setPreviewImage(null)}
+                  onClick={() => setSelectedCategory(cat.id)}
                   style={{
-                    position: 'absolute',
-                    top: -8,
-                    right: -8,
-                    backgroundColor: 'var(--color-emergency-600)',
-                    color: '#FFFFFF',
-                    borderRadius: '50%',
-                    width: 20,
-                    height: 20,
+                    padding: '0.85rem 0.5rem',
+                    border: isSelected ? `2px solid ${cat.color}` : '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: isSelected ? cat.bg : '#FFFFFF',
+                    color: isSelected ? cat.color : 'var(--color-neutral-800)',
                     display: 'flex',
+                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    border: 'none',
-                    cursor: 'pointer'
+                    gap: '0.4rem',
+                    cursor: 'pointer',
+                    boxShadow: isSelected ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+                    transition: 'all 0.15s ease'
                   }}
-                  title="Remove attached photo"
-                  aria-label="Remove attached photo"
                 >
-                  <X size={12} />
+                  <Icon size={24} strokeWidth={2.2} />
+                  <span style={{ fontSize: '0.72rem', fontWeight: 700, textAlign: 'center' }}>
+                    {cat.label}
+                  </span>
                 </button>
-              </div>
-            )}
+              );
+            })}
           </div>
-          {errors.image && (
-            <div className="form-error">
-              <AlertTriangle size={12} />
-              <span>{errors.image}</span>
+        </div>
+
+        {/* =========================================================================
+            STEP 2: WHERE (Location Picker Map & GPS Locator)
+            ========================================================================= */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: 'var(--text-xs)', fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-primary-900)', letterSpacing: '0.04em' }}>
+              Step 2: Where is the Incident?
+            </span>
+
+            <button
+              type="button"
+              onClick={handleUseCurrentLocation}
+              disabled={isLocating}
+              className="btn btn-xs"
+              style={{
+                backgroundColor: '#EFF6FF',
+                color: '#1D4ED8',
+                border: '1px solid #BFDBFE',
+                borderRadius: 'var(--radius-pill)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                fontSize: '0.72rem',
+                fontWeight: 600
+              }}
+            >
+              <LocateFixed size={13} />
+              <span>{isLocating ? 'Acquiring GPS...' : 'Use My Current Location'}</span>
+            </button>
+          </div>
+
+          {/* Mini Interactive Map */}
+          <div style={{ marginBottom: '0.65rem' }}>
+            <LocationPickerMap
+              position={position}
+              onChange={(newPos) => setPosition(newPos)}
+              onAddressResolve={(resolved) => setAddress(resolved)}
+              height="150px"
+            />
+          </div>
+
+          {/* Address input */}
+          <div style={{ position: 'relative' }}>
+            <MapPin size={16} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-primary-600)' }} />
+            <input
+              type="text"
+              className="form-input"
+              style={{ paddingLeft: '2.4rem', borderRadius: 'var(--radius-md)', fontSize: 'var(--text-sm)', fontWeight: 500 }}
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="Landmark or street address"
+              required
+            />
+          </div>
+        </div>
+
+        {/* =========================================================================
+            STEP 3: HOW MANY (People in Danger)
+            ========================================================================= */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <div style={{ fontSize: 'var(--text-xs)', fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-primary-900)', letterSpacing: '0.04em', marginBottom: '0.6rem' }}>
+            Step 3: How Many People in Immediate Danger?
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
+            {PEOPLE_OPTIONS.map((opt) => {
+              const isSelected = peopleCount === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setPeopleCount(opt.value)}
+                  style={{
+                    padding: '0.6rem 0.35rem',
+                    borderRadius: 'var(--radius-pill)',
+                    border: isSelected ? '2px solid var(--color-primary-600)' : '1px solid var(--color-border)',
+                    backgroundColor: isSelected ? '#EFF6FF' : '#FFFFFF',
+                    color: isSelected ? 'var(--color-primary-700)' : 'var(--color-neutral-700)',
+                    fontWeight: 700,
+                    fontSize: '0.72rem',
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    boxShadow: isSelected ? '0 2px 6px rgba(29, 78, 216, 0.15)' : 'none',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* =========================================================================
+            COLLAPSIBLE: Add Details or Photo (Optional)
+            ========================================================================= */}
+        <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1rem', marginBottom: '1.5rem' }}>
+          <button
+            type="button"
+            onClick={() => setShowOptionalDetails(!showOptionalDetails)}
+            style={{
+              width: '100%',
+              background: 'transparent',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              color: 'var(--color-neutral-600)',
+              fontSize: 'var(--text-xs)',
+              fontWeight: 600
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Camera size={14} />
+              <span>Add Scene Details or Photo (Optional)</span>
+            </span>
+            {showOptionalDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+
+          {showOptionalDetails && (
+            <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <input
+                type="text"
+                className="form-input"
+                style={{ borderRadius: 'var(--radius-md)', fontSize: 'var(--text-xs)' }}
+                placeholder="Custom headline (e.g. Submerged Basement at 5th St)"
+                value={customTitle}
+                onChange={(e) => setCustomTitle(e.target.value)}
+              />
+
+              <textarea
+                className="form-textarea"
+                rows="2"
+                style={{ borderRadius: 'var(--radius-md)', fontSize: 'var(--text-xs)' }}
+                placeholder="Specific hazards, trapped victims, water height, electrical sparking..."
+                value={customDescription}
+                onChange={(e) => setCustomDescription(e.target.value)}
+              />
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <label 
+                  className="btn btn-outline btn-xs" 
+                  style={{ borderRadius: 'var(--radius-pill)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                >
+                  <Upload size={13} />
+                  <span>Attach Image</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+
+                {previewImage && (
+                  <div style={{ position: 'relative' }}>
+                    <img
+                      src={previewImage}
+                      alt="Thumbnail"
+                      style={{ width: 44, height: 44, borderRadius: 'var(--radius-sm)', objectFit: 'cover', border: '1px solid var(--color-border)' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setPreviewImage(null)}
+                      style={{
+                        position: 'absolute',
+                        top: -6,
+                        right: -6,
+                        backgroundColor: '#DC2626',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        borderRadius: '50%',
+                        width: 18,
+                        height: 18,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <X size={10} />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           )}
-          <div className="form-help">
-            Supported formats: PNG, JPG, or WEBP up to 5MB. Photographic evidence accelerates triage.
-          </div>
         </div>
 
-        {/* Action Controls */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          gap: '1rem',
-          borderTop: '1px solid var(--color-border)',
-          paddingTop: '1.25rem',
-          marginTop: '1.5rem'
-        }}>
-          <Link to="/" className="btn btn-secondary">
-            Cancel
-          </Link>
-
-          <button
-            type="submit"
-            className="btn btn-emergency btn-lg"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <span>Transmitting Incident Telemetry...</span>
-            ) : (
-              <>
-                <AlertTriangle size={18} strokeWidth={2.2} />
-                <span>Submit Emergency Report</span>
-              </>
-            )}
-          </button>
-        </div>
+        {/* =========================================================================
+            PROMINENT RED PILL CTA BUTTON
+            ========================================================================= */}
+        <button
+          type="submit"
+          className="btn btn-emergency btn-block btn-lg"
+          disabled={isSubmitting}
+          style={{
+            borderRadius: 'var(--radius-pill)',
+            padding: '1rem',
+            fontSize: 'var(--text-base)',
+            fontWeight: 800,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.65rem',
+            boxShadow: '0 4px 18px rgba(220, 38, 38, 0.45)',
+            letterSpacing: '0.02em'
+          }}
+        >
+          {isSubmitting ? (
+            <span>Transmitting SOS Alert...</span>
+          ) : (
+            <>
+              <AlertTriangle size={20} strokeWidth={2.4} />
+              <span>Transmit Emergency SOS</span>
+            </>
+          )}
+        </button>
       </form>
 
-      {/* Post-Submission Confirmation Dialog */}
+      {/* Confirmation Dialog */}
       <ConfirmationDialog
         isOpen={showSuccessDialog}
         title="Incident Transmitted to Unified EOC"

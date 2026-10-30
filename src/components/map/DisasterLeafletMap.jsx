@@ -9,22 +9,28 @@ import {
   Truck, 
   Building2, 
   Phone, 
-  ShieldCheck,
+  ShieldAlert,
   AlertTriangle,
-  Compass
+  Compass,
+  Users,
+  Navigation,
+  Radio,
+  HelpCircle,
+  Construction
 } from 'lucide-react';
 
 /**
  * Custom HTML/CSS L.divIcon marker factory
- * Eliminates missing default Leaflet PNG image paths
  */
 export const createDivIcon = (type, glyph) => {
   let markerClass = 'marker-critical';
   if (type === 'CRITICAL') markerClass = 'marker-critical';
-  else if (type === 'HIGH' || type === 'MODERATE') markerClass = 'marker-warning';
+  else if (type === 'HIGH' || type === 'MODERATE' || type === 'LOW') markerClass = 'marker-warning';
+  else if (type === 'UNVERIFIED') markerClass = 'marker-unverified';
+  else if (type === 'RESOURCE') markerClass = 'marker-resource';
+  else if (type === 'BLOCKED_ROAD') markerClass = 'marker-blocked-road';
   else if (type === 'SHELTER') markerClass = 'marker-shelter';
   else if (type === 'HOSPITAL') markerClass = 'marker-hospital';
-  else if (type === 'LOW') markerClass = 'marker-warning';
 
   return L.divIcon({
     className: `resq-map-marker ${markerClass}`,
@@ -42,8 +48,11 @@ export const createDivIcon = (type, glyph) => {
 const ICONS = {
   CRITICAL: createDivIcon('CRITICAL', '!'),
   HIGH: createDivIcon('HIGH', '▲'),
-  MODERATE: createDivIcon('MODERATE', '●'),
-  LOW: createDivIcon('LOW', '○'),
+  MODERATE: createDivIcon('HIGH', '●'),
+  LOW: createDivIcon('HIGH', '○'),
+  UNVERIFIED: createDivIcon('UNVERIFIED', '?'),
+  RESOURCE: createDivIcon('RESOURCE', 'R'),
+  BLOCKED_ROAD: createDivIcon('BLOCKED_ROAD', '✕'),
   SHELTER: createDivIcon('SHELTER', 'S'),
   HOSPITAL: createDivIcon('HOSPITAL', '+')
 };
@@ -81,6 +90,16 @@ function MapController({ targetCoords, zoom = 14 }) {
 export const DisasterLeafletMap = ({
   incidents = [],
   shelters = [],
+  blockedRoads = [],
+  responseResources = [],
+  visibleLayers = {
+    critical: true,
+    high: true,
+    unverified: true,
+    resources: true,
+    blockedRoads: true,
+    shelters: true
+  },
   selectedTarget = null,
   center = [47.6062, -122.3321],
   zoom = 12,
@@ -128,15 +147,23 @@ export const DisasterLeafletMap = ({
 
         {targetCoords && <MapController targetCoords={targetCoords} zoom={15} />}
 
-        {/* Incident Markers */}
+        {/* =========================================================================
+            INCIDENT MARKERS (Critical, High, Unverified)
+            ========================================================================= */}
         {incidents.map((incident) => {
-          const icon = incident.severity === 'CRITICAL' 
-            ? ICONS.CRITICAL 
-            : incident.severity === 'HIGH' 
-              ? ICONS.HIGH 
-              : incident.severity === 'MODERATE' 
-                ? ICONS.MODERATE 
-                : ICONS.LOW;
+          const isUnverified = incident.isVerified === false;
+          
+          // Layer Visibility Gate
+          if (isUnverified && !visibleLayers.unverified) return null;
+          if (!isUnverified && incident.severity === 'CRITICAL' && !visibleLayers.critical) return null;
+          if (!isUnverified && incident.severity !== 'CRITICAL' && !visibleLayers.high) return null;
+
+          let icon = ICONS.HIGH;
+          if (isUnverified) {
+            icon = ICONS.UNVERIFIED;
+          } else if (incident.severity === 'CRITICAL') {
+            icon = ICONS.CRITICAL;
+          }
 
           return (
             <Marker
@@ -156,11 +183,48 @@ export const DisasterLeafletMap = ({
                 <div className="map-popup-card">
                   <div className="map-popup-header">
                     <span className="mono-id">{incident.id}</span>
-                    <SeverityBadge severity={incident.severity} />
+                    {isUnverified ? (
+                      <span 
+                        style={{ 
+                          fontSize: '0.65rem', 
+                          fontWeight: 700, 
+                          color: '#4F46E5', 
+                          backgroundColor: '#EEF2FF', 
+                          padding: '0.15rem 0.5rem', 
+                          borderRadius: 'var(--radius-pill)',
+                          border: '1px dashed #6366F1'
+                        }}
+                      >
+                        UNVERIFIED REPORT
+                      </span>
+                    ) : (
+                      <SeverityBadge severity={incident.severity} />
+                    )}
                   </div>
 
                   <div className="map-popup-title">{incident.title}</div>
                   <div className="map-popup-desc">{incident.description}</div>
+
+                  {incident.peopleAffected && (
+                    <div style={{ marginTop: '0.4rem', marginBottom: '0.4rem' }}>
+                      <span 
+                        style={{ 
+                          fontSize: '0.72rem', 
+                          fontWeight: 700, 
+                          color: '#B91C1C', 
+                          backgroundColor: '#FEE2E2', 
+                          padding: '0.15rem 0.55rem', 
+                          borderRadius: 'var(--radius-pill)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.3rem'
+                        }}
+                      >
+                        <Users size={11} />
+                        <span>~{incident.peopleAffected} People Impacted</span>
+                      </span>
+                    </div>
+                  )}
 
                   <div className="map-popup-meta">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
@@ -188,8 +252,102 @@ export const DisasterLeafletMap = ({
           );
         })}
 
+        {/* =========================================================================
+            LAYER 4: ACTIVE RESPONSE RESOURCES (Emerald Green)
+            ========================================================================= */}
+        {visibleLayers.resources && responseResources.map((res) => (
+          <Marker
+            key={res.id}
+            position={[res.latitude, res.longitude]}
+            icon={ICONS.RESOURCE}
+            ref={(ref) => {
+              if (ref) markerRefs.current[res.id] = ref;
+            }}
+            eventHandlers={{
+              click: () => {
+                if (onMarkerClick) onMarkerClick(res);
+              }
+            }}
+          >
+            <Popup>
+              <div className="map-popup-card">
+                <div className="map-popup-header">
+                  <span className="mono-id">{res.id}</span>
+                  <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#15803D', backgroundColor: '#DCFCE7', padding: '0.15rem 0.5rem', borderRadius: 'var(--radius-pill)' }}>
+                    {res.status}
+                  </span>
+                </div>
+
+                <div className="map-popup-title" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Truck size={14} color="#15803D" />
+                  <span>{res.name}</span>
+                </div>
+
+                <div style={{ fontSize: '0.72rem', color: 'var(--color-neutral-700)', margin: '0.35rem 0' }}>
+                  <strong>Type:</strong> {res.type} &bull; <strong>Personnel:</strong> {res.personnel} Officers
+                </div>
+
+                <div style={{ fontSize: '0.7rem', color: 'var(--color-neutral-600)', marginBottom: '0.4rem' }}>
+                  <strong>Equipment:</strong> {res.equipment}
+                </div>
+
+                <div className="map-popup-meta">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <Radio size={12} color="#15803D" />
+                    <span>Callsign: {res.contact}</span>
+                  </div>
+                </div>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+
+        {/* =========================================================================
+            LAYER 5: BLOCKED ROADS / ROUTE HAZARDS (Charcoal / Red)
+            ========================================================================= */}
+        {visibleLayers.blockedRoads && blockedRoads.map((br) => (
+          <Marker
+            key={br.id}
+            position={[br.latitude, br.longitude]}
+            icon={ICONS.BLOCKED_ROAD}
+            ref={(ref) => {
+              if (ref) markerRefs.current[br.id] = ref;
+            }}
+            eventHandlers={{
+              click: () => {
+                if (onMarkerClick) onMarkerClick(br);
+              }
+            }}
+          >
+            <Popup>
+              <div className="map-popup-card">
+                <div className="map-popup-header">
+                  <span className="mono-id">{br.id}</span>
+                  <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#DC2626', backgroundColor: '#FEE2E2', padding: '0.15rem 0.5rem', borderRadius: 'var(--radius-pill)' }}>
+                    ROAD BLOCKED
+                  </span>
+                </div>
+
+                <div className="map-popup-title" style={{ color: '#991B1B', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Construction size={14} color="#DC2626" />
+                  <span>{br.name}</span>
+                </div>
+
+                <div style={{ fontSize: '0.72rem', color: '#7F1D1D', margin: '0.35rem 0', lineHeight: 1.4 }}>
+                  <strong>Obstruction Reason:</strong> {br.reason}
+                </div>
+
+                <div style={{ backgroundColor: '#FEF2F2', padding: '0.45rem', borderRadius: 'var(--radius-sm)', border: '1px solid #FECACA', fontSize: '0.7rem', color: '#991B1B' }}>
+                  <Navigation size={11} style={{ display: 'inline', marginRight: '4px' }} />
+                  <strong>Tactical Bypass:</strong> {br.bypassAdvice}
+                </div>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+
         {/* Shelter and Hospital Markers */}
-        {shelters.map((shelter) => {
+        {visibleLayers.shelters && shelters.map((shelter) => {
           const isHospital = shelter.type === 'HOSPITAL';
           const icon = isHospital ? ICONS.HOSPITAL : ICONS.SHELTER;
 
@@ -217,7 +375,7 @@ export const DisasterLeafletMap = ({
                       color: isHospital ? '#15803D' : '#0A192F',
                       backgroundColor: isHospital ? '#DCFCE7' : '#DBEAFE',
                       padding: '0.1rem 0.4rem',
-                      borderRadius: 'var(--radius-xs)'
+                      borderRadius: 'var(--radius-pill)'
                     }}>
                       {shelter.type}
                     </span>
@@ -259,14 +417,14 @@ export const DisasterLeafletMap = ({
         })}
       </MapContainer>
 
-      {/* Persistent Map Legend (Kept safely inside isolated map context with z-index: 400) */}
+      {/* 5-Layer Persistent Tactical Legend */}
       <div 
         style={{
           position: 'absolute',
           bottom: 20,
           right: 20,
           backgroundColor: 'rgba(255, 255, 255, 0.96)',
-          padding: '0.75rem 1rem',
+          padding: '0.85rem 1.15rem',
           borderRadius: 'var(--radius-md)',
           boxShadow: 'var(--shadow-md)',
           zIndex: 400,
@@ -274,29 +432,33 @@ export const DisasterLeafletMap = ({
           border: '1px solid var(--color-border)',
           display: 'flex',
           flexDirection: 'column',
-          gap: '0.35rem',
+          gap: '0.4rem',
           pointerEvents: 'auto'
         }}
         aria-label="Map Legend"
       >
-        <div style={{ fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-neutral-600)', marginBottom: '0.15rem' }}>
-          Tactical Layer Legend
+        <div style={{ fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-neutral-700)', letterSpacing: '0.04em', marginBottom: '0.15rem' }}>
+          5-Layer Tactical Legend
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#DC2626', display: 'inline-block' }}></span>
-          <span>Critical Hazard (Pulsing)</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+          <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#DC2626', display: 'inline-block', boxShadow: '0 0 6px rgba(220, 38, 38, 0.8)' }}></span>
+          <span>Critical Hazard (Pulsing Red)</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#D97706', display: 'inline-block' }}></span>
-          <span>Warning / Moderate Hazard</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+          <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#D97706', display: 'inline-block' }}></span>
+          <span>High Priority Hazard (Amber)</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#0A192F', display: 'inline-block' }}></span>
-          <span>Emergency Shelter (Navy)</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+          <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#6366F1', border: '1px dashed #FFFFFF', display: 'inline-block' }}></span>
+          <span>Unverified Report (Dashed Violet)</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#15803D', display: 'inline-block' }}></span>
-          <span>Hospital / Trauma Hub (Green)</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+          <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#15803D', display: 'inline-block' }}></span>
+          <span>Response Units &amp; Resources (Green)</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+          <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#1E293B', border: '1px solid #DC2626', display: 'inline-block' }}></span>
+          <span>Blocked Route / Hazard (Charcoal)</span>
         </div>
       </div>
     </div>

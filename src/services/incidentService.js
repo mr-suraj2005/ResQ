@@ -42,6 +42,7 @@ export const incidentService = {
       reportedBy: reportDto.reportedBy?.trim() || "Citizen Report",
       assignedUnit: null,
       verified: false,
+      peopleAffected: reportDto.peopleAffected ? Number(reportDto.peopleAffected) : 4,
       createdAt: new Date().toISOString(),
       description: reportDto.description?.trim() || "",
       imageUrl: reportDto.imageUrl || null,
