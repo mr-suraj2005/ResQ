@@ -29,7 +29,7 @@ export const DashboardSidebar = ({ type = 'admin' }) => {
             {type === 'admin' ? 'EOC Command Center' : 'Tactical Unit Terminal'}
           </div>
           <div style={{ fontSize: '0.72rem', color: '#94A3B8', marginTop: '0.2rem' }}>
-            {type === 'admin' ? 'Operations & Dispatch' : currentUser.unit || 'Field Unit Alpha'}
+            {type === 'admin' ? 'Operations & Dispatch' : currentUser?.unit || 'Field Unit Alpha'}
           </div>
         </div>
       </div>
@@ -131,10 +131,10 @@ export const DashboardSidebar = ({ type = 'admin' }) => {
       <div className="sidebar-footer">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
           <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#22C55E' }}></div>
-          <span style={{ fontWeight: 600, color: '#E2E8F0' }}>{currentUser.name}</span>
+          <span style={{ fontWeight: 600, color: '#E2E8F0' }}>{currentUser?.name || 'Authorized Official'}</span>
         </div>
         <div style={{ fontSize: '0.7rem', color: '#64748B' }}>
-          {currentUser.badgeNumber ? `Badge: ${currentUser.badgeNumber}` : `Role: ${currentRole}`}
+          {currentUser?.badgeNumber ? `Badge: ${currentUser.badgeNumber}` : `Role: ${currentRole || 'CITIZEN'}`}
         </div>
       </div>
     </aside>

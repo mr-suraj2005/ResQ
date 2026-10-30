@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { initialShelters } from '../data/shelters';
 
 // Default configuration with safe fallback to user-provided credentials
 const SUPABASE_URL = (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_SUPABASE_URL) || 'https://vgwpwhgltnrjzfclmzlw.supabase.co';
@@ -18,7 +19,7 @@ export const supabaseConfig = {
 
 /**
  * Tests live connectivity to the Supabase PostgreSQL backend
- * Returns { connected: boolean, tablesFound: boolean, error?: string }
+ * Returns { connected: boolean, tablesFound: boolean, message?: string }
  */
 export async function testSupabaseConnection() {
   try {
@@ -53,7 +54,7 @@ export async function fetchRemoteIncidents() {
     if (error) throw error;
     if (!data) return null;
 
-    // Convert snake_case from Postgres to frontend camelCase
+    // Convert snake_case from Postgres to frontend camelCase with full compatibility
     return data.map(row => ({
       id: row.id,
       title: row.title,
@@ -61,17 +62,19 @@ export async function fetchRemoteIncidents() {
       severity: row.severity,
       status: row.status,
       address: row.address,
-      latitude: row.latitude,
-      longitude: row.longitude,
-      peopleAffected: row.people_affected,
-      description: row.description,
-      imageUrl: row.image_url,
-      reportedBy: row.reported_by,
-      assignedUnit: row.assigned_unit,
-      isVerified: row.is_verified,
-      fieldNotes: row.field_notes || [],
-      createdAt: row.created_at,
-      updatedAt: row.updated_at
+      latitude: Number(row.latitude) || 28.6139,
+      longitude: Number(row.longitude) || 77.2090,
+      peopleAffected: Number(row.people_affected) || 0,
+      description: row.description || '',
+      imageUrl: row.image_url || null,
+      reportedBy: row.reported_by || 'Citizen Reporter',
+      assignedUnit: row.assigned_unit || null,
+      isVerified: Boolean(row.is_verified),
+      verified: Boolean(row.is_verified),
+      fieldNotes: Array.isArray(row.field_notes) ? row.field_notes : [],
+      notes: Array.isArray(row.field_notes) ? row.field_notes : [],
+      createdAt: row.created_at || new Date().toISOString(),
+      updatedAt: row.updated_at || new Date().toISOString()
     }));
   } catch (err) {
     console.warn('Supabase fetchRemoteIncidents fallback:', err.message);
@@ -96,7 +99,7 @@ export async function insertRemoteIncident(incident) {
       reported_by: incident.reportedBy,
       assigned_unit: incident.assignedUnit,
       is_verified: Boolean(incident.isVerified),
-      field_notes: incident.fieldNotes || []
+      field_notes: incident.notes || incident.fieldNotes || []
     };
 
     const { data, error } = await supabase
@@ -121,6 +124,7 @@ export async function updateRemoteIncident(id, updates) {
     if (updates.status !== undefined) rowUpdates.status = updates.status;
     if (updates.isVerified !== undefined) rowUpdates.is_verified = updates.isVerified;
     if (updates.assignedUnit !== undefined) rowUpdates.assigned_unit = updates.assignedUnit;
+    if (updates.notes !== undefined) rowUpdates.field_notes = updates.notes;
     if (updates.fieldNotes !== undefined) rowUpdates.field_notes = updates.fieldNotes;
     if (updates.severity !== undefined) rowUpdates.severity = updates.severity;
     if (updates.peopleAffected !== undefined) rowUpdates.people_affected = Number(updates.peopleAffected);
@@ -148,7 +152,52 @@ export async function fetchRemoteShelters() {
   try {
     const { data, error } = await supabase.from('shelters').select('*');
     if (error) throw error;
-    return data;
+    if (!data || data.length === 0) return null;
+
+    const initialMap = new Map(initialShelters.map(s => [s.id, s]));
+
+    const remoteMapped = data.map(row => {
+      const initial = initialMap.get(row.id) || {};
+      const cap = Number(row.capacity) || initial.capacity || 500;
+      const occ = Number(row.occupancy) || initial.occupancy || 0;
+
+      return {
+        ...initial,
+        id: row.id,
+        facility: initial.facility || row.name,
+        name: row.name || initial.name,
+        type: initial.type || (row.type === 'HOSPITAL' ? 'Hospital' : 'Shelter Network'),
+        location: initial.location || row.district || 'India',
+        district: row.district || initial.district,
+        address: row.address || initial.address,
+        verifiedDetails: initial.verifiedDetails || `${cap} capacity`,
+        latitude: Number(row.latitude) || initial.latitude || 28.5672,
+        longitude: Number(row.longitude) || initial.longitude || 77.2100,
+        status: (row.status === 'OPEN' || row.status === 'OPERATIONAL') ? 'OPERATIONAL' : (initial.status || row.status || 'OPERATIONAL'),
+        emergencyContact: row.phone || initial.emergencyContact || '112 / 011-26701700',
+        phone: row.phone || initial.phone || '112',
+        activeUnits: initial.activeUnits || `${cap} Units`,
+        capacity: cap,
+        occupancy: occ,
+        medicalSupplies: initial.medicalSupplies || 'FULL',
+        wheelchairAccessible: initial.wheelchairAccessible ?? true,
+        petFriendly: initial.petFriendly ?? false,
+        amenities: initial.amenities || [
+          'Emergency Care & First Aid',
+          'Clean Potable Water & Rations',
+          'Emergency Power Backup'
+        ]
+      };
+    });
+
+    // Ensure all 5 verified facilities are present (including NDRF IND-DRM-005)
+    initialShelters.forEach(init => {
+      if (!remoteMapped.some(r => r.id === init.id)) {
+        remoteMapped.push(init);
+      }
+    });
+
+    return remoteMapped;
   } catch (err) {
     console.warn('Supabase fetchRemoteShelters fallback:', err.message);
     return null;
@@ -172,6 +221,10 @@ export async function updateRemoteShelter(id, updates) {
   }
 }
 
+// =============================================================================
+// ALERTS DATA ACCESS
+// =============================================================================
+
 export async function fetchRemoteAlerts() {
   try {
     const { data, error } = await supabase
@@ -182,17 +235,38 @@ export async function fetchRemoteAlerts() {
     if (error) throw error;
     if (!data) return null;
 
-    return data.map(row => ({
-      id: row.id,
-      title: row.title,
-      severity: row.severity,
-      category: row.category,
-      message: row.message,
-      issuedBy: row.issued_by,
-      affectedAreas: row.affected_areas,
-      isActive: row.is_active,
-      createdAt: row.created_at
-    }));
+    return data.map(row => {
+      // Robust normalization of affected zones
+      const rawZones = row.affected_areas || row.affectedZones || '';
+      const zonesList = Array.isArray(rawZones)
+        ? rawZones
+        : typeof rawZones === 'string' && rawZones.trim()
+          ? rawZones.split(',').map(s => s.trim()).filter(Boolean)
+          : ['National Capital Region & Coastal Zones'];
+
+      // Robust normalization of instructions
+      const rawMsg = row.message || row.instructions || '';
+      const instList = Array.isArray(rawMsg)
+        ? rawMsg
+        : typeof rawMsg === 'string' && rawMsg.trim()
+          ? rawMsg.split(/\.\s+|\n+/).map(s => s.trim()).filter(Boolean)
+          : ['Comply with directives from field emergency responders.'];
+
+      const isActive = row.is_active !== undefined ? Boolean(row.is_active) : (row.active !== undefined ? Boolean(row.active) : true);
+
+      return {
+        id: row.id,
+        title: row.title || 'Official Emergency Broadcast',
+        severity: row.severity || 'WARNING',
+        category: row.category || 'FLOOD',
+        author: row.issued_by || row.author || 'NDMA & NDRF Unified Command',
+        issuedAt: row.created_at || row.issued_at || new Date().toISOString(),
+        expiresAt: row.expires_at || new Date(Date.now() + 86400000).toISOString(),
+        active: isActive,
+        affectedZones: zonesList,
+        instructions: instList
+      };
+    });
   } catch (err) {
     console.warn('Supabase fetchRemoteAlerts fallback:', err.message);
     return null;
@@ -206,10 +280,10 @@ export async function insertRemoteAlert(alert) {
       title: alert.title,
       severity: alert.severity,
       category: alert.category,
-      message: alert.message,
-      issued_by: alert.issuedBy,
-      affected_areas: alert.affectedAreas,
-      is_active: alert.isActive !== undefined ? alert.isActive : true
+      message: Array.isArray(alert.instructions) ? alert.instructions.join('. ') : (alert.instructions || alert.message || ''),
+      issued_by: alert.author || alert.issuedBy || 'EOC Command',
+      affected_areas: Array.isArray(alert.affectedZones) ? alert.affectedZones.join(', ') : (alert.affectedZones || alert.affectedAreas || ''),
+      is_active: alert.active !== undefined ? Boolean(alert.active) : true
     };
 
     const { data, error } = await supabase.from('alerts').insert([row]).select().single();
@@ -231,8 +305,8 @@ export async function fetchRemoteBlockedRoads() {
       id: r.id,
       name: r.name,
       reason: r.reason,
-      latitude: r.latitude,
-      longitude: r.longitude,
+      latitude: Number(r.latitude) || 28.6139,
+      longitude: Number(r.longitude) || 77.2090,
       status: r.status,
       bypassAdvice: r.bypass_advice,
       reportedAt: r.reported_at
@@ -258,7 +332,6 @@ export async function fetchRemoteResponseResources() {
 
 export async function invokeAICrisisAnalysis(contextPayload) {
   try {
-    // Attempt invoking Supabase Edge Function 'crisis-analysis'
     const { data, error } = await supabase.functions.invoke('crisis-analysis', {
       body: contextPayload
     });
@@ -266,7 +339,6 @@ export async function invokeAICrisisAnalysis(contextPayload) {
     if (error) throw error;
     return { success: true, analysis: data, source: 'Supabase Edge AI Function' };
   } catch (err) {
-    // Graceful fallback to client-side heuristics
     return {
       success: false,
       message: err.message,

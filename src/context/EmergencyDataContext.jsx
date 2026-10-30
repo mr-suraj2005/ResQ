@@ -392,7 +392,12 @@ export const EmergencyDataProvider = ({ children }) => {
   const criticalAlerts = activeAlerts.filter(a => a.severity === 'CRITICAL');
   const activeIncidents = incidents.filter(i => i.status !== 'RESOLVED' && i.status !== 'REJECTED');
   const pendingIncidents = incidents.filter(i => i.status === 'PENDING_REVIEW' || !i.isVerified);
-  const openShelters = shelters.filter(s => s.status === 'OPEN' || s.status === 'NEAR_CAPACITY');
+  const openShelters = shelters.filter(s => 
+    s.status === 'OPEN' || 
+    s.status === 'NEAR_CAPACITY' || 
+    s.status === 'OPERATIONAL' || 
+    s.status === 'ACTIVE NETWORK'
+  );
   const deployedUnits = incidents.filter(i => i.assignedUnit && i.status !== 'RESOLVED').length;
 
   const value = {

@@ -32,7 +32,7 @@ export const ResponderLayout = () => {
                   Tactical Unit MDT (Mobile Data Terminal)
                 </div>
                 <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-neutral-500)' }}>
-                  Unit: {currentUser.unit || 'Marine Rescue Unit 1'} &bull; Operator: {currentUser.name}
+                  Unit: {currentUser?.unit || 'Marine Rescue Unit 1'} &bull; Operator: {currentUser?.name || 'Field Operator'}
                 </div>
               </div>
             </div>

@@ -4,11 +4,11 @@ import { AlertCircle, AlertTriangle, Info, X, ChevronRight } from 'lucide-react'
 import { useEmergencyData } from '../../context/EmergencyDataContext';
 
 export const AlertBanner = () => {
-  const { criticalAlerts, activeAlerts } = useEmergencyData();
+  const { criticalAlerts = [], activeAlerts = [] } = useEmergencyData() || {};
   const [dismissed, setDismissed] = useState(false);
 
   // Focus on top critical alert if active, or top active warning
-  const alert = criticalAlerts[0] || activeAlerts[0];
+  const alert = (criticalAlerts && criticalAlerts[0]) || (activeAlerts && activeAlerts[0]);
 
   if (!alert || dismissed) return null;
 
@@ -23,18 +23,26 @@ export const AlertBanner = () => {
 
   const Icon = isCritical ? AlertCircle : isWarning ? AlertTriangle : Info;
 
+  const zones = Array.isArray(alert.affectedZones)
+    ? alert.affectedZones
+    : typeof alert.affectedZones === 'string' && alert.affectedZones.trim()
+      ? [alert.affectedZones]
+      : [];
+
   return (
     <div className={`alert-banner ${bannerClass}`} role="region" aria-label="Official Emergency Broadcast">
       <div className="alert-banner-content">
         <Icon size={18} strokeWidth={2} />
         <div>
-          <span className="alert-banner-tag">{alert.severity}</span>
+          <span className="alert-banner-tag">{alert.severity || 'NOTICE'}</span>
           <span className="alert-banner-title" style={{ marginLeft: '0.5rem' }}>
-            {alert.title}
+            {alert.title || 'Official Civic Directive'}
           </span>
-          <span style={{ fontSize: 'var(--text-xs)', marginLeft: '0.5rem', opacity: 0.9 }}>
-            — Affected: {alert.affectedZones.slice(0, 2).join(', ')}
-          </span>
+          {zones.length > 0 && (
+            <span style={{ fontSize: 'var(--text-xs)', marginLeft: '0.5rem', opacity: 0.9 }}>
+              — Affected: {zones.slice(0, 2).join(', ')}
+            </span>
+          )}
         </div>
         <Link to="/alerts" className="alert-banner-link">
           View Directives <ChevronRight size={12} style={{ display: 'inline', verticalAlign: '-1px' }} />
@@ -53,4 +61,3 @@ export const AlertBanner = () => {
     </div>
   );
 };
-

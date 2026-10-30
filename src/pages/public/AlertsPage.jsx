@@ -29,11 +29,13 @@ export const AlertsPage = () => {
       // Search query filter
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
-        const matchesTitle = alert.title.toLowerCase().includes(query);
-        const matchesCategory = alert.category.toLowerCase().includes(query);
-        const matchesAuthor = alert.author.toLowerCase().includes(query);
-        const matchesZones = alert.affectedZones.some(z => z.toLowerCase().includes(query));
-        const matchesInstructions = alert.instructions.some(i => i.toLowerCase().includes(query));
+        const matchesTitle = (alert.title || '').toLowerCase().includes(query);
+        const matchesCategory = (alert.category || '').toLowerCase().includes(query);
+        const matchesAuthor = (alert.author || '').toLowerCase().includes(query);
+        const zones = Array.isArray(alert.affectedZones) ? alert.affectedZones : [];
+        const instructions = Array.isArray(alert.instructions) ? alert.instructions : [];
+        const matchesZones = zones.some(z => (z || '').toLowerCase().includes(query));
+        const matchesInstructions = instructions.some(i => (i || '').toLowerCase().includes(query));
         return matchesTitle || matchesCategory || matchesAuthor || matchesZones || matchesInstructions;
       }
       return true;
@@ -159,7 +161,7 @@ export const AlertsPage = () => {
                       Affected Geographic Zones:
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
-                      {alert.affectedZones.map((zone, idx) => (
+                      {(Array.isArray(alert.affectedZones) ? alert.affectedZones : []).map((zone, idx) => (
                         <span 
                           key={idx}
                           style={{
@@ -195,7 +197,7 @@ export const AlertsPage = () => {
                       fontSize: 'var(--text-sm)',
                       color: 'var(--color-neutral-800)' 
                     }}>
-                      {alert.instructions.map((step, idx) => (
+                      {(Array.isArray(alert.instructions) ? alert.instructions : []).map((step, idx) => (
                         <li key={idx} style={{ lineHeight: 1.5 }}>
                           {step}
                         </li>
