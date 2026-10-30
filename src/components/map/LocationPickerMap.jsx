@@ -35,7 +35,7 @@ function MapClickHandler({ onChange, onAddressResolve }) {
       const roundedLng = Number(lng.toFixed(5));
       onChange([roundedLat, roundedLng]);
       if (onAddressResolve) {
-        onAddressResolve(`GPS: ${roundedLat}° N, ${roundedLng}° W (Seattle Metro)`);
+        onAddressResolve(`GPS: ${roundedLat}° N, ${roundedLng}° E (India Command Zone)`);
       }
     }
   });
@@ -44,7 +44,7 @@ function MapClickHandler({ onChange, onAddressResolve }) {
 }
 
 export const LocationPickerMap = ({
-  position = [47.6062, -122.3321],
+  position = [28.6139, 77.2090],
   onChange,
   onAddressResolve,
   height = '240px'
@@ -59,7 +59,7 @@ export const LocationPickerMap = ({
           const roundedLng = Number(latLng.lng.toFixed(5));
           onChange([roundedLat, roundedLng]);
           if (onAddressResolve) {
-            onAddressResolve(`GPS: ${roundedLat}° N, ${roundedLng}° W (Seattle Metro)`);
+            onAddressResolve(`GPS: ${roundedLat}° N, ${roundedLng}° E (India Command Zone)`);
           }
         }
       }
@@ -71,7 +71,7 @@ export const LocationPickerMap = ({
     <div className="map-picker-wrapper" style={{ height, width: '100%' }}>
       <MapContainer
         center={position}
-        zoom={13}
+        zoom={12}
         style={{ height: '100%', width: '100%' }}
         scrollWheelZoom={true}
       >

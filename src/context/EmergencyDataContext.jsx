@@ -25,12 +25,12 @@ import {
 const EmergencyDataContext = createContext(null);
 
 const STORAGE_KEYS = {
-  INCIDENTS: 'resq_incidents_v1',
-  ALERTS: 'resq_alerts_v1',
-  SHELTERS: 'resq_shelters_v1',
-  INVENTORY: 'resq_inventory_v1',
-  BLOCKED_ROADS: 'resq_blocked_roads_v1',
-  RESOURCES: 'resq_resources_v1'
+  INCIDENTS: 'resq_incidents_v2',
+  ALERTS: 'resq_alerts_v2',
+  SHELTERS: 'resq_shelters_v2',
+  INVENTORY: 'resq_inventory_v2',
+  BLOCKED_ROADS: 'resq_blocked_roads_v2',
+  RESOURCES: 'resq_resources_v2'
 };
 
 export const EmergencyDataProvider = ({ children }) => {
@@ -383,6 +383,8 @@ export const EmergencyDataProvider = ({ children }) => {
     localStorage.removeItem(STORAGE_KEYS.INVENTORY);
     localStorage.removeItem(STORAGE_KEYS.BLOCKED_ROADS);
     localStorage.removeItem(STORAGE_KEYS.RESOURCES);
+    // Legacy cleanup
+    ['resq_incidents_v1', 'resq_alerts_v1', 'resq_shelters_v1', 'resq_inventory_v1', 'resq_blocked_roads_v1', 'resq_resources_v1'].forEach(k => localStorage.removeItem(k));
   };
 
   // Precomputed Executive KPI metrics

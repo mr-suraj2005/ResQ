@@ -9,128 +9,106 @@ import {
   Phone, 
   MapPin, 
   Check, 
-  AlertCircle, 
-  Accessibility, 
-  Dog, 
+  ShieldAlert,
   ShieldCheck,
-  Filter
+  Radio,
+  CheckCircle2,
+  Users,
+  Award
 } from 'lucide-react';
 
 export const ShelterFinderPage = () => {
   const { shelters } = useEmergencyData();
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('ALL');
-  const [accessibleOnly, setAccessibleOnly] = useState(false);
-  const [petFriendlyOnly, setPetFriendlyOnly] = useState(false);
 
   const filteredShelters = useMemo(() => {
     return shelters.filter(shelter => {
       // Type filter
-      if (typeFilter !== 'ALL' && shelter.type !== typeFilter) {
-        return false;
+      if (typeFilter !== 'ALL') {
+        const sType = (shelter.type || '').toLowerCase();
+        const fType = typeFilter.toLowerCase();
+        if (fType === 'hospital' && !sType.includes('hospital')) return false;
+        if (fType === 'shelter network' && !sType.includes('shelter')) return false;
+        if (fType === 'response force' && !sType.includes('response') && !sType.includes('force')) return false;
       }
-      // Accessibility flags
-      if (accessibleOnly && !shelter.wheelchairAccessible) {
-        return false;
-      }
-      if (petFriendlyOnly && !shelter.petFriendly) {
-        return false;
-      }
+
       // Search text
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
-        const matchesName = shelter.name.toLowerCase().includes(query);
-        const matchesAddress = shelter.address.toLowerCase().includes(query);
-        const matchesDistrict = shelter.district.toLowerCase().includes(query);
-        const matchesAmenities = shelter.amenities.some(a => a.toLowerCase().includes(query));
-        return matchesName || matchesAddress || matchesDistrict || matchesAmenities;
+        const matchesId = (shelter.id || '').toLowerCase().includes(query);
+        const matchesName = (shelter.facility || shelter.name || '').toLowerCase().includes(query);
+        const matchesLocation = (shelter.location || shelter.district || '').toLowerCase().includes(query);
+        const matchesAddress = (shelter.address || '').toLowerCase().includes(query);
+        const matchesDetails = (shelter.verifiedDetails || '').toLowerCase().includes(query);
+        return matchesId || matchesName || matchesLocation || matchesAddress || matchesDetails;
       }
       return true;
     });
-  }, [shelters, typeFilter, accessibleOnly, petFriendlyOnly, searchQuery]);
+  }, [shelters, typeFilter, searchQuery]);
 
   return (
-    <div className="container page-container">
+    <div className="container page-container" style={{ paddingBottom: '3.5rem' }}>
       <PageHeader
-        title="Emergency Shelters &amp; Medical Centers"
-        subtitle="Real-time capacity tracking, medical readiness, and intake protocols across municipal facilities."
-        breadcrumb="PUBLIC PORTAL / SHELTER FINDER"
+        title="Verified National Disaster Facilities &amp; Response Hubs"
+        subtitle="Official directory of certified apex trauma hospitals, state cyclone shelter networks, and national rescue forces across India."
+        breadcrumb="PUBLIC PORTAL / VERIFIED FACILITIES"
       />
 
       {/* Control Filters */}
-      <div className="card" style={{ padding: '1.25rem', marginBottom: '2rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1.25rem', alignItems: 'center' }}>
+      <div className="card" style={{ padding: '1.25rem', marginBottom: '2rem', borderRadius: 'var(--radius-lg)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1.8fr)', gap: '1.25rem', alignItems: 'center' }}>
           <div>
-            <label className="form-label">Search Facilities</label>
+            <label className="form-label" style={{ fontSize: 'var(--text-xs)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              Search National Facilities
+            </label>
             <SearchBar
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder="Search by facility name, district (e.g., First Hill, Queen Anne)..."
+              placeholder="Search by ID (IND-HSP-001), state (Odisha, Delhi), or facility..."
               onClear={() => setSearchQuery('')}
             />
           </div>
 
           <div>
-            <label className="form-label">Facility Classification</label>
-            <div style={{ display: 'flex', gap: '0.4rem' }}>
+            <label className="form-label" style={{ fontSize: 'var(--text-xs)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              Filter by Facility Classification
+            </label>
+            <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
               <button
                 type="button"
                 className={`filter-pill ${typeFilter === 'ALL' ? 'active' : ''}`}
                 onClick={() => setTypeFilter('ALL')}
+                style={{ borderRadius: 'var(--radius-pill)', fontSize: 'var(--text-xs)' }}
               >
-                All Facilities ({shelters.length})
+                All (5)
               </button>
               <button
                 type="button"
-                className={`filter-pill ${typeFilter === 'SHELTER' ? 'active' : ''}`}
-                onClick={() => setTypeFilter('SHELTER')}
+                className={`filter-pill ${typeFilter === 'Hospital' ? 'active' : ''}`}
+                onClick={() => setTypeFilter('Hospital')}
+                style={{ borderRadius: 'var(--radius-pill)', fontSize: 'var(--text-xs)' }}
               >
-                Shelters
+                Hospital (IND-HSP-001)
               </button>
               <button
                 type="button"
-                className={`filter-pill ${typeFilter === 'HOSPITAL' ? 'active' : ''}`}
-                onClick={() => setTypeFilter('HOSPITAL')}
+                className={`filter-pill ${typeFilter === 'Shelter Network' ? 'active' : ''}`}
+                onClick={() => setTypeFilter('Shelter Network')}
+                style={{ borderRadius: 'var(--radius-pill)', fontSize: 'var(--text-xs)' }}
               >
-                Hospitals &amp; Trauma
+                Shelter Network (IND-SHL-002, 003, 004)
+              </button>
+              <button
+                type="button"
+                className={`filter-pill ${typeFilter === 'Response Force' ? 'active' : ''}`}
+                onClick={() => setTypeFilter('Response Force')}
+                style={{ borderRadius: 'var(--radius-pill)', fontSize: 'var(--text-xs)' }}
+              >
+                Response Force (IND-DRM-005)
               </button>
             </div>
           </div>
-        </div>
-
-        {/* Checkbox toggles for accessibility */}
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '1.5rem', 
-          marginTop: '1rem', 
-          paddingTop: '0.85rem', 
-          borderTop: '1px solid var(--color-border)',
-          fontSize: 'var(--text-xs)'
-        }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer', userSelect: 'none' }}>
-            <input
-              type="checkbox"
-              checked={accessibleOnly}
-              onChange={(e) => setAccessibleOnly(e.target.checked)}
-              style={{ cursor: 'pointer' }}
-            />
-            <span style={{ fontWeight: 600, color: 'var(--color-neutral-800)' }}>
-              ADA Wheelchair Accessible Only
-            </span>
-          </label>
-
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer', userSelect: 'none' }}>
-            <input
-              type="checkbox"
-              checked={petFriendlyOnly}
-              onChange={(e) => setPetFriendlyOnly(e.target.checked)}
-              style={{ cursor: 'pointer' }}
-            />
-            <span style={{ fontWeight: 600, color: 'var(--color-neutral-800)' }}>
-              Pet Co-Sheltering Allowed
-            </span>
-          </label>
         </div>
       </div>
 
@@ -138,8 +116,8 @@ export const ShelterFinderPage = () => {
       {filteredShelters.length === 0 ? (
         <EmptyState
           icon={Building2}
-          title="No shelters or medical centers match your search"
-          description="Try disabling the ADA or pet filters, or broadening your district keyword."
+          title="No verified national facilities match your search"
+          description="Try clearing your search query or selecting 'All (5)'."
           action={
             <button 
               type="button"
@@ -147,8 +125,6 @@ export const ShelterFinderPage = () => {
               onClick={() => {
                 setSearchQuery('');
                 setTypeFilter('ALL');
-                setAccessibleOnly(false);
-                setPetFriendlyOnly(false);
               }}
             >
               Reset All Filters
@@ -156,170 +132,186 @@ export const ShelterFinderPage = () => {
           }
         />
       ) : (
-        <div className="grid-2">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1.5rem' }}>
           {filteredShelters.map((shelter) => {
+            const isHospital = shelter.type === 'Hospital' || shelter.type === 'HOSPITAL';
+            const isResponseForce = shelter.type === 'Response Force';
+            const isShelterNetwork = shelter.type === 'Shelter Network' || shelter.type === 'SHELTER';
+
             const occupancyPct = Math.round((shelter.occupancy / shelter.capacity) * 100);
-            const isNearFull = occupancyPct >= 85 && occupancyPct < 100;
-            const isFull = occupancyPct >= 100;
-
-            const progressBarClass = isFull 
-              ? 'occupancy-critical' 
-              : isNearFull 
-                ? 'occupancy-warning' 
-                : 'occupancy-normal';
-
-            const statusBadgeClass = shelter.status === 'OPEN'
-              ? 'severity-low'
-              : shelter.status === 'NEAR_CAPACITY'
-                ? 'severity-high'
-                : 'severity-critical';
-
-            const isHospital = shelter.type === 'HOSPITAL';
 
             return (
-              <article key={shelter.id} className="card" style={{ display: 'flex', flexDirection: 'column' }}>
-                <div className="card-header">
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                      <span className="mono-id">{shelter.id}</span>
-                      <span style={{ 
-                        fontSize: 'var(--text-xs)', 
-                        fontWeight: 700, 
-                        color: isHospital ? '#1E40AF' : '#065F46',
-                        backgroundColor: isHospital ? '#EFF6FF' : '#ECFDF5',
-                        padding: '0.15rem 0.45rem',
-                        borderRadius: 'var(--radius-xs)'
-                      }}>
+              <article 
+                key={shelter.id} 
+                className="card" 
+                style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  justifyContent: 'space-between',
+                  borderRadius: 'var(--radius-lg)',
+                  border: '1px solid var(--color-border)',
+                  boxShadow: 'var(--shadow-sm)',
+                  overflow: 'hidden'
+                }}
+              >
+                <div>
+                  {/* Card Header with Exact Monospace ID Badge */}
+                  <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--color-border)', backgroundColor: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                      <span 
+                        className="mono-id"
+                        style={{
+                          fontSize: '0.8rem',
+                          fontWeight: 800,
+                          backgroundColor: '#0F172A',
+                          color: '#F8FAFC',
+                          padding: '0.25rem 0.65rem',
+                          borderRadius: 'var(--radius-pill)',
+                          letterSpacing: '0.04em'
+                        }}
+                      >
+                        {shelter.id}
+                      </span>
+
+                      {/* Exact Type Badge */}
+                      <span 
+                        style={{ 
+                          fontSize: 'var(--text-xs)', 
+                          fontWeight: 700, 
+                          color: isHospital ? '#1E40AF' : isResponseForce ? '#B45309' : '#065F46',
+                          backgroundColor: isHospital ? '#EFF6FF' : isResponseForce ? '#FEF3C7' : '#ECFDF5',
+                          border: isHospital ? '1px solid #BFDBFE' : isResponseForce ? '1px solid #FDE68A' : '1px solid #A7F3D0',
+                          padding: '0.2rem 0.65rem',
+                          borderRadius: 'var(--radius-pill)'
+                        }}
+                      >
                         {shelter.type}
                       </span>
                     </div>
-                    <h2 style={{ fontSize: 'var(--text-base)', fontWeight: 700, color: 'var(--color-neutral-900)' }}>
-                      {shelter.name}
-                    </h2>
-                  </div>
 
-                  <span className={`badge ${statusBadgeClass}`}>
-                    {shelter.status.replace('_', ' ')}
-                  </span>
-                </div>
-
-                <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {/* Location & District */}
-                  <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-neutral-600)' }}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.4rem', marginBottom: '0.25rem' }}>
-                      <MapPin size={16} color="var(--color-primary-600)" style={{ flexShrink: 0, marginTop: '2px' }} />
-                      <div>
-                        <strong>{shelter.address}</strong>
-                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-neutral-500)' }}>
-                          District: {shelter.district} &bull; Coordinates: {shelter.latitude}, {shelter.longitude}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Occupancy Progress Bar */}
-                  <div className="occupancy-wrapper">
-                    <div className="occupancy-label">
-                      <span><strong>Bed Occupancy:</strong> {shelter.occupancy} / {shelter.capacity} beds</span>
-                      <span style={{ fontWeight: 700 }}>{occupancyPct}%</span>
-                    </div>
-                    <div className="occupancy-bar-bg">
-                      <div 
-                        className={`occupancy-bar-fill ${progressBarClass}`}
-                        style={{ width: `${Math.min(occupancyPct, 100)}%` }}
-                        role="progressbar"
-                        aria-valuenow={shelter.occupancy}
-                        aria-valuemin="0"
-                        aria-valuemax={shelter.capacity}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Operational Tags: ADA, Pets, Medical Supplies */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap', fontSize: 'var(--text-xs)' }}>
-                    {shelter.wheelchairAccessible && (
-                      <span style={{ 
-                        display: 'inline-flex', 
-                        alignItems: 'center', 
-                        gap: '0.25rem',
-                        color: 'var(--color-success-700)',
-                        backgroundColor: 'var(--color-success-50)',
-                        padding: '0.2rem 0.5rem',
-                        borderRadius: 'var(--radius-xs)',
-                        fontWeight: 600
-                      }}>
-                        <Accessibility size={13} />
-                        <span>ADA Accessible</span>
-                      </span>
-                    )}
-
-                    {shelter.petFriendly && (
-                      <span style={{ 
-                        display: 'inline-flex', 
-                        alignItems: 'center', 
-                        gap: '0.25rem',
-                        color: '#6366F1',
-                        backgroundColor: '#EEF2FF',
-                        padding: '0.2rem 0.5rem',
-                        borderRadius: 'var(--radius-xs)',
-                        fontWeight: 600
-                      }}>
-                        <Dog size={13} />
-                        <span>Pets Permitted</span>
-                      </span>
-                    )}
-
-                    <span style={{ 
-                      display: 'inline-flex', 
-                      alignItems: 'center', 
-                      gap: '0.25rem',
-                      color: shelter.medicalSupplies === 'FULL' ? 'var(--color-success-700)' : 'var(--color-warning-800)',
-                      backgroundColor: shelter.medicalSupplies === 'FULL' ? 'var(--color-success-50)' : 'var(--color-warning-50)',
-                      padding: '0.2rem 0.5rem',
-                      borderRadius: 'var(--radius-xs)',
-                      fontWeight: 600
-                    }}>
-                      <HeartPulse size={13} />
-                      <span>Medical Supplies: {shelter.medicalSupplies}</span>
+                    <span 
+                      style={{ 
+                        fontSize: '0.72rem', 
+                        fontWeight: 700, 
+                        color: '#15803D', 
+                        backgroundColor: '#DCFCE7', 
+                        padding: '0.2rem 0.6rem', 
+                        borderRadius: 'var(--radius-pill)' 
+                      }}
+                    >
+                      {shelter.status}
                     </span>
                   </div>
 
-                  {/* Amenities List */}
-                  <div>
-                    <div style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--color-neutral-500)', marginBottom: '0.35rem', textTransform: 'uppercase' }}>
-                      Provided Amenities:
+                  <div style={{ padding: '1.5rem' }}>
+                    {/* Facility Title */}
+                    <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: 800, color: 'var(--color-neutral-900)', marginBottom: '0.5rem' }}>
+                      {shelter.facility || shelter.name}
+                    </h2>
+
+                    {/* Exact Verified Details Badge */}
+                    <div style={{ marginBottom: '1rem' }}>
+                      <div 
+                        style={{ 
+                          display: 'inline-flex', 
+                          alignItems: 'center', 
+                          gap: '0.4rem', 
+                          fontSize: '0.78rem', 
+                          fontWeight: 700, 
+                          color: '#065F46', 
+                          backgroundColor: '#ECFDF5', 
+                          border: '1px solid #A7F3D0', 
+                          padding: '0.35rem 0.75rem', 
+                          borderRadius: 'var(--radius-md)' 
+                        }}
+                      >
+                        <ShieldCheck size={16} color="#059669" />
+                        <span><strong>Verified Details:</strong> {shelter.verifiedDetails}</span>
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-                      {shelter.amenities.map((item, idx) => (
-                        <span 
-                          key={idx}
-                          style={{
-                            fontSize: '0.72rem',
-                            backgroundColor: 'var(--color-neutral-100)',
-                            color: 'var(--color-neutral-700)',
-                            padding: '0.15rem 0.45rem',
-                            borderRadius: 'var(--radius-xs)'
-                          }}
-                        >
-                          {item}
+
+                    {/* Location & Address */}
+                    <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-neutral-600)', marginBottom: '1rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.45rem', marginBottom: '0.35rem' }}>
+                        <MapPin size={16} color="var(--color-primary-600)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                        <div>
+                          <div style={{ fontWeight: 700, color: 'var(--color-neutral-800)' }}>
+                            Location: {shelter.location || shelter.district}
+                          </div>
+                          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-neutral-500)', marginTop: '0.15rem' }}>
+                            {shelter.address}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Operational Metrics / Capacity */}
+                    <div className="occupancy-wrapper" style={{ marginBottom: '1rem' }}>
+                      <div className="occupancy-label" style={{ fontSize: 'var(--text-xs)' }}>
+                        <span>
+                          <strong>{isHospital ? 'Trauma Bed Load:' : isResponseForce ? 'Personnel Readiness:' : 'Shelter Intake Load:'}</strong> {shelter.occupancy.toLocaleString()} / {shelter.capacity.toLocaleString()}
                         </span>
-                      ))}
+                        <span style={{ fontWeight: 800 }}>{occupancyPct}%</span>
+                      </div>
+                      <div className="occupancy-bar-bg" style={{ height: 7 }}>
+                        <div 
+                          className="occupancy-bar-fill occupancy-normal"
+                          style={{ width: `${Math.min(occupancyPct, 100)}%` }}
+                        />
+                      </div>
                     </div>
+
+                    {/* Amenities List */}
+                    {shelter.amenities && (
+                      <div>
+                        <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-neutral-500)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                          Verified Capabilities:
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                          {shelter.amenities.map((item, idx) => (
+                            <span 
+                              key={idx}
+                              style={{
+                                fontSize: '0.72rem',
+                                backgroundColor: 'var(--color-neutral-100)',
+                                color: 'var(--color-neutral-700)',
+                                padding: '0.2rem 0.55rem',
+                                borderRadius: 'var(--radius-pill)',
+                                fontWeight: 500
+                              }}
+                            >
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                <div className="card-footer">
+                {/* Card Footer: Emergency Contact Link */}
+                <div 
+                  style={{ 
+                    padding: '1rem 1.5rem', 
+                    borderTop: '1px solid var(--color-border)', 
+                    backgroundColor: '#F8FAFC',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}
+                >
                   <a 
-                    href={`tel:${shelter.phone.replace(/[^0-9]/g, '')}`} 
+                    href={`tel:${(shelter.emergencyContact || shelter.phone || '112').split('/')[0].trim()}`} 
                     className="btn btn-outline btn-sm"
-                    style={{ textDecoration: 'none' }}
+                    style={{ borderRadius: 'var(--radius-pill)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
                   >
                     <Phone size={14} />
-                    <span>Intake Line: {shelter.phone}</span>
+                    <span>Contact: {shelter.emergencyContact || shelter.phone}</span>
                   </a>
 
-                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-neutral-500)' }}>
-                    Intake Hours: 24/7 Active
+                  <span style={{ fontSize: '0.72rem', color: '#16A34A', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <CheckCircle2 size={13} />
+                    <span>24/7 Verified</span>
                   </span>
                 </div>
               </article>
@@ -330,4 +322,3 @@ export const ShelterFinderPage = () => {
     </div>
   );
 };
-

@@ -9,11 +9,10 @@ import {
   Plus, 
   Minus, 
   HeartPulse, 
-  Droplet, 
-  BatteryCharging,
-  Warehouse,
-  ShieldAlert,
-  MapPin
+  Warehouse, 
+  ShieldCheck, 
+  MapPin,
+  Phone
 } from 'lucide-react';
 
 export const ResourceManagementPage = () => {
@@ -34,21 +33,21 @@ export const ResourceManagementPage = () => {
   return (
     <div>
       <PageHeader
-        title="Resource &amp; Logistics Command"
-        subtitle="Live tracking of municipal shelter capacity, critical disaster stockpiles, and relief warehouse inventory."
-        breadcrumb="ADMINISTRATION / RESOURCE LOGISTICS"
+        title="National Disaster Facilities &amp; Resource Logistics"
+        subtitle="Operational command and live tracking of verified national apex trauma centers, cyclone shelter networks, and response forces across India."
+        breadcrumb="ADMINISTRATION / NATIONAL RESOURCES"
       />
 
       {/* Resource Health Overview Row */}
       <div className="grid-3" style={{ marginBottom: '1.75rem' }}>
-        <div className="card" style={{ padding: '1.25rem' }}>
+        <div className="card" style={{ padding: '1.25rem', borderRadius: 'var(--radius-lg)' }}>
           <div style={{ fontSize: 'var(--text-xs)', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-neutral-500)', marginBottom: '0.25rem' }}>
-            Shelter Capacity Load
+            National Intake &amp; Readiness Load
           </div>
           <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, color: 'var(--color-neutral-900)' }}>
-            {occupiedBeds} <span style={{ fontSize: 'var(--text-sm)', fontWeight: 500, color: 'var(--color-neutral-500)' }}>/ {totalBeds} beds ({Math.round((occupiedBeds / totalBeds) * 100)}%)</span>
+            {occupiedBeds.toLocaleString()} <span style={{ fontSize: 'var(--text-sm)', fontWeight: 500, color: 'var(--color-neutral-500)' }}>/ {totalBeds.toLocaleString()} capacity ({Math.round((occupiedBeds / totalBeds) * 100)}%)</span>
           </div>
-          <div className="occupancy-bar-bg" style={{ marginTop: '0.65rem' }}>
+          <div className="occupancy-bar-bg" style={{ marginTop: '0.65rem', height: 7 }}>
             <div 
               className="occupancy-bar-fill occupancy-normal"
               style={{ width: `${Math.round((occupiedBeds / totalBeds) * 100)}%` }}
@@ -56,27 +55,27 @@ export const ResourceManagementPage = () => {
           </div>
         </div>
 
-        <div className="card" style={{ padding: '1.25rem' }}>
+        <div className="card" style={{ padding: '1.25rem', borderRadius: 'var(--radius-lg)' }}>
           <div style={{ fontSize: 'var(--text-xs)', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-neutral-500)', marginBottom: '0.25rem' }}>
-            Facilities Monitored
+            Verified National Facilities
           </div>
           <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, color: 'var(--color-neutral-900)' }}>
-            {shelters.length} Facilities
+            {shelters.length} Strategic Hubs
           </div>
           <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-success-700)', fontWeight: 600, marginTop: '0.5rem' }}>
-            {shelters.filter(s => s.status === 'OPEN').length} Open &bull; {shelters.filter(s => s.status === 'NEAR_CAPACITY').length} Near Capacity
+            AIIMS New Delhi &bull; Odisha &bull; Andhra Pradesh &bull; West Bengal &bull; NDRF
           </div>
         </div>
 
-        <div className="card" style={{ padding: '1.25rem' }}>
+        <div className="card" style={{ padding: '1.25rem', borderRadius: 'var(--radius-lg)' }}>
           <div style={{ fontSize: 'var(--text-xs)', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-neutral-500)', marginBottom: '0.25rem' }}>
-            Inventory Reserves
+            National Relief Stockpiles
           </div>
           <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, color: lowStockItems > 0 ? 'var(--color-warning-700)' : 'var(--color-success-700)' }}>
             {lowStockItems > 0 ? `${lowStockItems} Low Stock Alerts` : 'All Stockpiles Healthy'}
           </div>
           <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-neutral-500)', marginTop: '0.5rem' }}>
-            Water, trauma kits, food rations &amp; generators
+            Trauma kits, inflatable zodiacs, potable water &amp; emergency generators
           </div>
         </div>
       </div>
@@ -87,139 +86,151 @@ export const ResourceManagementPage = () => {
           type="button"
           className={`btn ${activeTab === 'shelters' ? 'btn-primary' : 'btn-outline'}`}
           onClick={() => setActiveTab('shelters')}
+          style={{ borderRadius: 'var(--radius-pill)', fontSize: 'var(--text-xs)' }}
         >
           <Building2 size={16} />
-          <span>Shelter Facilities Directory ({shelters.length})</span>
+          <span>Verified National Facilities Directory ({shelters.length})</span>
         </button>
 
         <button
           type="button"
           className={`btn ${activeTab === 'inventory' ? 'btn-primary' : 'btn-outline'}`}
           onClick={() => setActiveTab('inventory')}
+          style={{ borderRadius: 'var(--radius-pill)', fontSize: 'var(--text-xs)' }}
         >
           <Boxes size={16} />
-          <span>Relief Stockpiles &amp; Warehouses ({inventory.length})</span>
+          <span>National Relief Stockpiles &amp; Depots ({inventory.length})</span>
         </button>
       </div>
 
       {/* Tab 1: Shelters Manager */}
       {activeTab === 'shelters' ? (
-        <div className="table-container">
+        <div className="table-container" style={{ borderRadius: 'var(--radius-lg)' }}>
           <table className="civic-table">
             <thead>
               <tr>
                 <th>ID</th>
                 <th>Facility &amp; Location</th>
-                <th>Classification</th>
-                <th>Occupancy / Capacity</th>
-                <th>Status</th>
-                <th>Medical Supplies</th>
-                <th>Bed Adjustments</th>
-                <th style={{ textAlign: 'right' }}>Operational Status</th>
+                <th>Type</th>
+                <th>Verified Details</th>
+                <th>Intake / Capacity</th>
+                <th>Operational Status</th>
+                <th>Emergency Contact</th>
+                <th style={{ textAlign: 'right' }}>Capacity Adjustment</th>
               </tr>
             </thead>
             <tbody>
               {shelters.map((s) => {
                 const pct = Math.round((s.occupancy / s.capacity) * 100);
-                const isFull = pct >= 100;
-                const isNearCapacity = pct >= 80 && pct < 100;
-
-                const barClass = isFull 
-                  ? 'occupancy-critical' 
-                  : isNearCapacity 
-                    ? 'occupancy-warning' 
-                    : 'occupancy-normal';
+                const isHospital = s.type === 'Hospital' || s.type === 'HOSPITAL';
+                const isResponse = s.type === 'Response Force';
 
                 return (
                   <tr key={s.id}>
-                    <td><span className="mono-id">{s.id}</span></td>
+                    <td>
+                      <span 
+                        className="mono-id"
+                        style={{
+                          fontSize: '0.75rem',
+                          fontWeight: 800,
+                          backgroundColor: '#0F172A',
+                          color: '#FFFFFF',
+                          padding: '0.2rem 0.55rem',
+                          borderRadius: 'var(--radius-pill)'
+                        }}
+                      >
+                        {s.id}
+                      </span>
+                    </td>
 
                     <td>
-                      <div style={{ fontWeight: 600, color: 'var(--color-neutral-900)' }}>{s.name}</div>
-                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-neutral-500)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <div style={{ fontWeight: 700, color: 'var(--color-neutral-900)' }}>{s.facility || s.name}</div>
+                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-neutral-500)', display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.15rem' }}>
                         <MapPin size={11} color="var(--color-primary-600)" />
-                        <span>{s.address} ({s.district})</span>
+                        <span>{s.location || s.district} &bull; {s.address}</span>
                       </div>
                     </td>
 
                     <td>
                       <span style={{ 
-                        fontSize: 'var(--text-xs)', 
+                        fontSize: '0.72rem', 
                         fontWeight: 700, 
-                        color: s.type === 'HOSPITAL' ? '#15803D' : '#0A192F',
-                        backgroundColor: s.type === 'HOSPITAL' ? '#DCFCE7' : '#DBEAFE',
-                        padding: '0.15rem 0.45rem',
-                        borderRadius: 'var(--radius-xs)'
+                        color: isHospital ? '#1E40AF' : isResponse ? '#B45309' : '#065F46',
+                        backgroundColor: isHospital ? '#EFF6FF' : isResponse ? '#FEF3C7' : '#ECFDF5',
+                        border: isHospital ? '1px solid #BFDBFE' : isResponse ? '1px solid #FDE68A' : '1px solid #A7F3D0',
+                        padding: '0.2rem 0.55rem',
+                        borderRadius: 'var(--radius-pill)'
                       }}>
                         {s.type}
                       </span>
                     </td>
 
-                    <td style={{ minWidth: '180px' }}>
+                    <td>
+                      <span style={{ 
+                        fontSize: '0.75rem', 
+                        fontWeight: 700, 
+                        color: '#15803D',
+                        backgroundColor: '#DCFCE7',
+                        padding: '0.2rem 0.55rem',
+                        borderRadius: 'var(--radius-pill)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.3rem'
+                      }}>
+                        <ShieldCheck size={12} />
+                        <span>{s.verifiedDetails}</span>
+                      </span>
+                    </td>
+
+                    <td style={{ minWidth: '160px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-xs)', fontWeight: 600, marginBottom: '0.25rem' }}>
-                        <span>{s.occupancy} / {s.capacity} beds</span>
+                        <span>{s.occupancy.toLocaleString()} / {s.capacity.toLocaleString()}</span>
                         <span>{pct}%</span>
                       </div>
                       <div className="occupancy-bar-bg" style={{ height: 6 }}>
                         <div 
-                          className={`occupancy-bar-fill ${barClass}`}
+                          className="occupancy-bar-fill occupancy-normal"
                           style={{ width: `${Math.min(100, pct)}%` }}
                         />
                       </div>
                     </td>
 
                     <td>
-                      <span className={`badge ${
-                        s.status === 'OPEN' ? 'severity-low' : s.status === 'NEAR_CAPACITY' ? 'severity-high' : 'severity-critical'
-                      }`}>
-                        {s.status.replace('_', ' ')}
+                      <span className="badge severity-low" style={{ borderRadius: 'var(--radius-pill)', fontWeight: 700 }}>
+                        {s.status}
                       </span>
                     </td>
 
                     <td>
-                      <span style={{ 
-                        fontSize: 'var(--text-xs)', 
-                        fontWeight: 600,
-                        color: s.medicalSupplies === 'FULL' ? 'var(--color-success-700)' : 'var(--color-warning-800)'
-                      }}>
-                        {s.medicalSupplies}
-                      </span>
+                      <a 
+                        href={`tel:${(s.emergencyContact || s.phone || '112').split('/')[0].trim()}`} 
+                        style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--color-primary-600)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                      >
+                        <Phone size={12} />
+                        <span>{s.emergencyContact || s.phone}</span>
+                      </a>
                     </td>
 
-                    <td>
+                    <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
                         <button
                           type="button"
                           className="btn btn-secondary btn-xs"
-                          onClick={() => updateShelter(s.id, Math.max(0, s.occupancy - 10))}
-                          title="Decrease beds occupied by 10"
+                          onClick={() => updateShelter(s.id, Math.max(0, s.occupancy - 100))}
+                          title="Decrease occupied by 100"
                         >
-                          <Minus size={11} /> 10
+                          <Minus size={11} /> 100
                         </button>
 
                         <button
                           type="button"
                           className="btn btn-secondary btn-xs"
-                          onClick={() => updateShelter(s.id, Math.min(s.capacity, s.occupancy + 10))}
-                          title="Increase beds occupied by 10"
+                          onClick={() => updateShelter(s.id, Math.min(s.capacity, s.occupancy + 100))}
+                          title="Increase occupied by 100"
                         >
-                          <Plus size={11} /> 10
+                          <Plus size={11} /> 100
                         </button>
                       </div>
-                    </td>
-
-                    <td style={{ textAlign: 'right' }}>
-                      <select
-                        className="form-select"
-                        style={{ padding: '0.25rem 0.5rem', fontSize: 'var(--text-xs)', width: 'auto', display: 'inline-block' }}
-                        value={s.status}
-                        onChange={(e) => updateShelter(s.id, undefined, e.target.value)}
-                      >
-                        <option value="OPEN">OPEN</option>
-                        <option value="NEAR_CAPACITY">NEAR CAPACITY</option>
-                        <option value="FULL">FULL</option>
-                        <option value="CLOSED">CLOSED</option>
-                      </select>
                     </td>
                   </tr>
                 );
@@ -229,7 +240,7 @@ export const ResourceManagementPage = () => {
         </div>
       ) : (
         /* Tab 2: Relief Inventory Manager */
-        <div className="table-container">
+        <div className="table-container" style={{ borderRadius: 'var(--radius-lg)' }}>
           <table className="civic-table">
             <thead>
               <tr>

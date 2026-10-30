@@ -132,7 +132,7 @@ export const HomePage = () => {
               letterSpacing: '0.04em'
             }}>
               <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block', boxShadow: '0 0 8px #10B981' }}></span>
-              <span>OFFICIAL CRISIS NETWORK &bull; METRO REGION</span>
+              <span>OFFICIAL CRISIS NETWORK &bull; INDIA NATIONAL HUB</span>
             </div>
 
             {/* Bold Single-Line Headline */}
@@ -292,8 +292,8 @@ export const HomePage = () => {
             title="Click to launch interactive Live Threat Map"
           >
             <MapContainer
-              center={[47.6062, -122.3321]}
-              zoom={12}
+              center={[21.1458, 79.0882]}
+              zoom={4}
               scrollWheelZoom={false}
               zoomControl={false}
               dragging={false}
@@ -335,7 +335,7 @@ export const HomePage = () => {
             >
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                 <Compass size={14} color="#60A5FA" />
-                <span>Live Tactical GIS &bull; {incidents.length} Mapped Pins</span>
+                <span>Live Tactical GIS &bull; {incidents.length} Mapped India Pins</span>
               </span>
               <span style={{ color: '#93C5FD', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
                 Explore Map &rarr;

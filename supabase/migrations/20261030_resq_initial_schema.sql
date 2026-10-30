@@ -157,3 +157,4 @@ VALUES
     ('RES-03', 'DOT Heavy Extraction Convoy', 'Debris Clearance / Structural Shoring', 'AVAILABLE', 47.6110, -122.3280, 4, 'CAT Hydraulic Excavator, Shoring Beams', 'Callsign: Recon-3 (Ch 8)'),
     ('RES-04', 'Field Medic Rapid Response 4', 'Mass Casualty Triage', 'DEPLOYED', 47.6010, -122.3330, 4, 'Trauma Stretchers, Field AEDs, O2 Kits', 'Callsign: Medic-4 (Priority 1)')
 ON CONFLICT (id) DO NOTHING;
+

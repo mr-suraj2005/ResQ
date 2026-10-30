@@ -1,70 +1,53 @@
-// ResQ Official Broadcast Alerts Dataset
+// ResQ Official Broadcast Alerts Dataset — National Disaster Management Authority (India)
 export const initialAlerts = [
   {
-    id: "ALT-2026-001",
-    title: "Flash Flood & Coastal Seawall Inundation Emergency",
+    id: "IND-ALT-2026-001",
+    title: "Bay of Bengal Severe Cyclonic Storm & Surge Warning",
     severity: "CRITICAL",
     category: "FLOOD",
-    affectedZones: ["Downtown Waterfront", "Pioneer Square", "Harbor Island", "Interbay Lowlands"],
+    affectedZones: ["Odisha Coastal Districts (Puri, Jagatsinghpur)", "Andhra Pradesh (Srikakulam, Visakhapatnam)", "West Bengal Sundarbans Delta"],
     instructions: [
-      "Avoid travel along Alaskan Way and low-lying coastal arterials.",
-      "Do NOT attempt to drive through standing water of unknown depth.",
-      "Residents in ground-floor and subterranean basements should relocate to upper floors immediately.",
-      "Monitor local emergency broadcasts and emergency SMS alerts."
+      "Total suspension of fishing operations along Odisha, AP, and West Bengal coastline.",
+      "Move to designated Cyclone Shelters (IND-SHL-002, 003, 004) immediately.",
+      "Keep 72-hour emergency go-bag ready with drinking water, dry rations, torch, and medicines.",
+      "Toll-free National Disaster Helpline: 112 | NDMA: 1078."
     ],
-    issuedAt: "2026-10-29T16:00:00Z",
-    expiresAt: "2026-10-30T04:00:00Z",
+    issuedAt: "2026-10-30T04:00:00Z",
+    expiresAt: "2026-10-31T12:00:00Z",
     active: true,
-    author: "National Weather Service & Seattle EOC"
+    author: "India Meteorological Department (IMD) & NDMA"
   },
   {
-    id: "ALT-2026-002",
-    title: "Shelter-in-Place Warning: Chemical Vapor Containment",
-    severity: "WARNING",
-    category: "HAZMAT",
-    affectedZones: ["SoDo Industrial Area", "4th Ave S Corridor (Between Holgate & Spokane St)"],
+    id: "IND-ALT-2026-002",
+    title: "Yamuna River Water Level Crosses Evacuation Danger Mark",
+    severity: "CRITICAL",
+    category: "FLOOD",
+    affectedZones: ["Yamuna Bazar", "Old Railway Bridge (Loha Pul)", "Kashmere Gate Lowlands", "Mayur Vihar Extension"],
     instructions: [
-      "Remain indoors with doors and windows tightly closed.",
-      "Shut off all HVAC, exterior air vents, and air conditioning units.",
-      "Keep pets indoors and seal exterior door thresholds with damp towels if odor is detected.",
-      "Emergency crews are on site containing the vapor release."
+      "Residents within 500m of riverbanks must vacate to DDMA relief camps.",
+      "Do NOT venture near submerged underpasses or ghat embankments.",
+      "Disconnection of electrical lines in flood-prone basements in progress.",
+      "Delhi Disaster Control Helpline: 1077 | Central Control: 112."
     ],
-    issuedAt: "2026-10-29T17:50:00Z",
-    expiresAt: "2026-10-29T22:00:00Z",
+    issuedAt: "2026-10-30T05:15:00Z",
+    expiresAt: "2026-10-31T06:00:00Z",
     active: true,
-    author: "King County HazMat Interagency Task Force"
+    author: "Central Water Commission (CWC) & DDMA"
   },
   {
-    id: "ALT-2026-003",
-    title: "Precautionary Boil Water Advisory for Central District",
-    severity: "ADVISORY",
+    id: "IND-ALT-2026-003",
+    title: "NDRF Multi-Battalion Coastal Pre-Positioning Notice",
+    severity: "HIGH",
     category: "INFRASTRUCTURE",
-    affectedZones: ["Central District", "First Hill (East of Broadway)", "Squire Park"],
+    affectedZones: ["East Coast Railway Arterials", "National Highway NH-16 & NH-5 Corridors"],
     instructions: [
-      "Bring all municipal tap water to a rolling boil for at least 1 full minute prior to drinking, cooking, or brushing teeth.",
-      "Emergency bottled water distribution point opened at Garfield Community Center.",
-      "Water pressure testing is underway across pressure zones 4 and 5."
+      "Heavy commercial transit restricted along coastal expressways.",
+      "NDRF 2nd, 3rd, and 10th battalions on active patrol with amphibious watercraft.",
+      "Direct medical trauma cases to AIIMS New Delhi JPN Apex Trauma Centre (IND-HSP-001) or State Medical Colleges."
     ],
-    issuedAt: "2026-10-29T15:30:00Z",
-    expiresAt: "2026-10-30T18:00:00Z",
+    issuedAt: "2026-10-30T06:00:00Z",
+    expiresAt: "2026-10-31T18:00:00Z",
     active: true,
-    author: "Seattle Public Utilities Drinking Water Division"
-  },
-  {
-    id: "ALT-2026-004",
-    title: "High Wind Gale Advisory & Downed Power Lines Warning",
-    severity: "ADVISORY",
-    category: "WEATHER",
-    affectedZones: ["Magnolia", "Queen Anne", "West Seattle Bluffs"],
-    instructions: [
-      "Expect sustained winds of 35-45 mph with gusts reaching 60 mph.",
-      "Treat all downed power lines as actively energized; maintain at least a 30-foot perimeter.",
-      "Secure outdoor furniture, trash bins, and loose objects."
-    ],
-    issuedAt: "2026-10-29T13:00:00Z",
-    expiresAt: "2026-10-30T02:00:00Z",
-    active: true,
-    author: "Emergency Management Division"
+    author: "National Disaster Response Force (NDRF HQ New Delhi)"
   }
 ];
-

@@ -101,8 +101,8 @@ export const DisasterLeafletMap = ({
     shelters: true
   },
   selectedTarget = null,
-  center = [47.6062, -122.3321],
-  zoom = 12,
+  center = [21.1458, 79.0882],
+  zoom = 5,
   onMarkerClick
 }) => {
   const markerRefs = useRef({});
@@ -280,21 +280,28 @@ export const DisasterLeafletMap = ({
 
                 <div className="map-popup-title" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                   <Truck size={14} color="#15803D" />
-                  <span>{res.name}</span>
+                  <span>{res.facility || res.name}</span>
                 </div>
 
-                <div style={{ fontSize: '0.72rem', color: 'var(--color-neutral-700)', margin: '0.35rem 0' }}>
-                  <strong>Type:</strong> {res.type} &bull; <strong>Personnel:</strong> {res.personnel} Officers
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', margin: '0.35rem 0', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '0.1rem 0.45rem', borderRadius: 'var(--radius-pill)', backgroundColor: '#EFF6FF', color: '#1D4ED8' }}>
+                    Type: {res.type}
+                  </span>
+                  <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '0.1rem 0.45rem', borderRadius: 'var(--radius-pill)', backgroundColor: '#FEF3C7', color: '#B45309' }}>
+                    {res.location || 'India-wide'}
+                  </span>
                 </div>
 
-                <div style={{ fontSize: '0.7rem', color: 'var(--color-neutral-600)', marginBottom: '0.4rem' }}>
-                  <strong>Equipment:</strong> {res.equipment}
-                </div>
+                {res.verifiedDetails && (
+                  <div style={{ fontSize: '0.72rem', backgroundColor: '#F0FDF4', color: '#166534', padding: '0.35rem 0.55rem', borderRadius: 'var(--radius-sm)', border: '1px solid #BBF7D0', marginBottom: '0.35rem' }}>
+                    <strong>Verified Details:</strong> {res.verifiedDetails}
+                  </div>
+                )}
 
                 <div className="map-popup-meta">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <Radio size={12} color="#15803D" />
-                    <span>Callsign: {res.contact}</span>
+                    <Phone size={12} color="#15803D" />
+                    <span>Emergency Contact: {res.contact || res.emergencyContact || '112'}</span>
                   </div>
                 </div>
               </div>
@@ -348,7 +355,7 @@ export const DisasterLeafletMap = ({
 
         {/* Shelter and Hospital Markers */}
         {visibleLayers.shelters && shelters.map((shelter) => {
-          const isHospital = shelter.type === 'HOSPITAL';
+          const isHospital = shelter.type === 'HOSPITAL' || shelter.type === 'Hospital';
           const icon = isHospital ? ICONS.HOSPITAL : ICONS.SHELTER;
 
           return (
@@ -374,19 +381,30 @@ export const DisasterLeafletMap = ({
                       fontWeight: 700, 
                       color: isHospital ? '#15803D' : '#0A192F',
                       backgroundColor: isHospital ? '#DCFCE7' : '#DBEAFE',
-                      padding: '0.1rem 0.4rem',
+                      padding: '0.15rem 0.5rem',
                       borderRadius: 'var(--radius-pill)'
                     }}>
                       {shelter.type}
                     </span>
                   </div>
 
-                  <div className="map-popup-title">{shelter.name}</div>
+                  <div className="map-popup-title">{shelter.facility || shelter.name}</div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', margin: '0.3rem 0', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '0.1rem 0.45rem', borderRadius: 'var(--radius-pill)', backgroundColor: '#F1F5F9', color: '#334155' }}>
+                      Location: {shelter.location || shelter.district}
+                    </span>
+                    {shelter.verifiedDetails && (
+                      <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '0.1rem 0.45rem', borderRadius: 'var(--radius-pill)', backgroundColor: '#DCFCE7', color: '#15803D' }}>
+                        {shelter.verifiedDetails}
+                      </span>
+                    )}
+                  </div>
 
                   <div style={{ margin: '0.4rem 0', fontSize: 'var(--text-xs)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
-                      <span><strong>Bed Capacity:</strong></span>
-                      <span>{shelter.occupancy} / {shelter.capacity}</span>
+                      <span><strong>Active Capacity:</strong></span>
+                      <span>{shelter.occupancy.toLocaleString()} / {shelter.capacity.toLocaleString()}</span>
                     </div>
                     <div className="occupancy-bar-bg" style={{ height: 6 }}>
                       <div 
@@ -405,8 +423,8 @@ export const DisasterLeafletMap = ({
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                       <Phone size={12} />
-                      <a href={`tel:${shelter.phone}`} style={{ color: 'var(--color-primary-600)', fontWeight: 600 }}>
-                        {shelter.phone}
+                      <a href={`tel:${(shelter.emergencyContact || shelter.phone || '112').split('/')[0].trim()}`} style={{ color: 'var(--color-primary-600)', fontWeight: 600 }}>
+                        {shelter.emergencyContact || shelter.phone}
                       </a>
                     </div>
                   </div>

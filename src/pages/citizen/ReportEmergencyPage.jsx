@@ -50,8 +50,8 @@ export const ReportEmergencyPage = () => {
   const [severity, setSeverity] = useState('CRITICAL'); // 'CRITICAL' | 'HIGH'
 
   // Step 2: WHERE
-  const [position, setPosition] = useState([47.6062, -122.3321]);
-  const [address, setAddress] = useState('4th Ave & Pike St, Seattle, WA');
+  const [position, setPosition] = useState([28.6139, 77.2090]);
+  const [address, setAddress] = useState('Connaught Place / Central Delhi, New Delhi 110001');
   const [isLocating, setIsLocating] = useState(false);
 
   // Step 3: HOW MANY
@@ -73,13 +73,13 @@ export const ReportEmergencyPage = () => {
         (pos) => {
           const newPos = [pos.coords.latitude, pos.coords.longitude];
           setPosition(newPos);
-          setAddress(`GPS: ${pos.coords.latitude.toFixed(4)}° N, ${pos.coords.longitude.toFixed(4)}° W`);
+          setAddress(`GPS: ${pos.coords.latitude.toFixed(4)}° N, ${pos.coords.longitude.toFixed(4)}° E`);
           setIsLocating(false);
         },
         () => {
           // Fallback location
-          setPosition([47.6062, -122.3321]);
-          setAddress('Downtown Metro Emergency Zone, Seattle, WA');
+          setPosition([28.6139, 77.2090]);
+          setAddress('National Capital Region, New Delhi, India');
           setIsLocating(false);
         },
         { timeout: 5000 }

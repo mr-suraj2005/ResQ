@@ -7,11 +7,11 @@
 const OPEN_METEO_BASE = 'https://api.open-meteo.com/v1/forecast';
 const USGS_FEED = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson';
 
-// Coherent default Seattle metro coordinates
+// Coherent default India national coordinates
 export const DEFAULT_COORDS = {
-  lat: 47.6062,
-  lng: -122.3321,
-  city: 'Seattle Metro, WA'
+  lat: 28.6139,
+  lng: 77.2090,
+  city: 'National Capital Region, New Delhi, India'
 };
 
 // Weather code translation based on WMO standards
@@ -82,10 +82,10 @@ export const liveTelemetryService = {
         windSpeed: 42,
         windGusts: 64,
         windUnit: 'km/h',
-        condition: 'Heavy Coastal Rain & Gale Gusts',
+        condition: 'Bay of Bengal Monsoon Depressions & Coastal Winds',
         weatherCode: 65,
         isLive: false,
-        source: 'Emergency Meteorological Cache',
+        source: 'IMD National Meteorological Cache',
         lastUpdated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
       };
     }
@@ -120,16 +120,16 @@ export const liveTelemetryService = {
       };
     } catch (err) {
       return {
-        activeEarthquakes24h: 38,
+        activeEarthquakes24h: 24,
         latestEvent: {
-          title: 'M 1.9 - 14 km NW of Seattle, Washington',
-          mag: 1.9,
-          place: 'Puget Sound Seismic Zone',
-          time: '18 mins ago'
+          title: 'M 2.8 - Himalayan Foothills / Northern Fault Line',
+          mag: 2.8,
+          place: 'Northern Seismic Fault Zone, India',
+          time: '24 mins ago'
         },
         seismicAlertLevel: 'NORMAL_MONITORING',
         isLive: false,
-        source: 'Regional Seismic Network Cache'
+        source: 'National Center for Seismology (NCS India)'
       };
     }
   },

@@ -58,7 +58,7 @@ export const AIAnalysisPanel = ({ compact = false, className = '' }) => {
     // Hotspot detection: Group incidents by location
     const locationMap = {};
     activeIncidents.forEach(inc => {
-      const locKey = inc.location?.split(',')[0]?.trim() || 'Central Metro';
+      const locKey = inc.address?.split(',').slice(-1)[0]?.trim() || inc.location || 'India Sector';
       if (!locationMap[locKey]) {
         locationMap[locKey] = { name: locKey, count: 0, people: 0, critical: 0 };
       }
@@ -91,14 +91,14 @@ export const AIAnalysisPanel = ({ compact = false, className = '' }) => {
     const overcrowdedShelter = shelters.find(s => (s.occupancy / s.capacity) >= 0.85);
     if (overcrowdedShelter) {
       gaps.push({
-        title: `Shelter Threshold Exceeded: ${overcrowdedShelter.name}`,
+        title: `Shelter Threshold Exceeded: ${overcrowdedShelter.facility || overcrowdedShelter.name}`,
         desc: `Capacity at ${Math.round((overcrowdedShelter.occupancy / overcrowdedShelter.capacity) * 100)}%. Divert incoming evacuees to secondary facilities.`,
         priority: 'MEDIUM'
       });
     } else {
       gaps.push({
-        title: 'Tactical Corridor Clearance',
-        desc: 'Maintain clear right-of-way for emergency convoys connecting Downtown to Level-1 Trauma Centers.',
+        title: 'National Transit Corridor Clearance',
+        desc: 'Maintain clear right-of-way along NH-16 & NH-5 for NDRF convoys connecting coastal sectors to AIIMS Trauma Centre (IND-HSP-001).',
         priority: 'NORMAL'
       });
     }
