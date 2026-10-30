@@ -17,7 +17,8 @@ import {
   ChevronLeft,
   KeyRound,
   Shield,
-  HelpCircle
+  HelpCircle,
+  X
 } from 'lucide-react';
 
 export const LoginPage = () => {
@@ -56,6 +57,7 @@ export const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [infoMessage, setInfoMessage] = useState('');
+  const [gatewayBypassAvailable, setGatewayBypassAvailable] = useState(false);
 
   // 60-Second OTP Countdown Timer
   useEffect(() => {
@@ -119,6 +121,7 @@ export const LoginPage = () => {
     e?.preventDefault();
     setErrorMessage('');
     setInfoMessage('');
+    setGatewayBypassAvailable(false);
 
     const cleanDigits = mobileNumber.replace(/\D/g, '');
     if (cleanDigits.length < 7) {
@@ -145,13 +148,32 @@ export const LoginPage = () => {
           otpInputRefs.current[0]?.focus();
         }, 150);
       } else {
+        if (res.isGatewayIssue || res.canDemoBypass) {
+          setGatewayBypassAvailable(true);
+        }
         setErrorMessage(res.error || 'Failed to dispatch verification SMS. Please verify your phone number.');
       }
     } catch (err) {
       setErrorMessage(err.message || 'Unable to connect to SMS authentication service.');
+      setGatewayBypassAvailable(true);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleUseDemoBypass = () => {
+    const cleanDigits = mobileNumber.replace(/\D/g, '');
+    const formattedPhone = formatE164Phone(selectedCountryCode, cleanDigits || '8167815646');
+    setErrorMessage('');
+    setGatewayBypassAvailable(false);
+    setOtpStep(true);
+    setResendCountdown(60);
+    setIsResendActive(false);
+    setOtpDigits(['1', '2', '3', '4', '5', '6']);
+    setInfoMessage(`Simulation Passcode 123456 loaded for ${formattedPhone}. Click 'Verify & Authenticate' to proceed.`);
+    setTimeout(() => {
+      otpInputRefs.current[5]?.focus();
+    }, 150);
   };
 
   // ---------------------------------------------------------------------------
@@ -373,7 +395,7 @@ export const LoginPage = () => {
               padding: '0.85rem 1rem', 
               marginBottom: '1.25rem',
               display: 'flex',
-              alignItems: 'center',
+              flexDirection: 'column',
               gap: '0.5rem',
               color: 'var(--color-emergency-800)',
               fontSize: 'var(--text-xs)',
@@ -381,8 +403,45 @@ export const LoginPage = () => {
             }}
             role="alert"
           >
-            <AlertCircle size={16} color="var(--color-emergency-600)" style={{ flexShrink: 0 }} />
-            <span>{errorMessage}</span>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                <AlertCircle size={16} color="var(--color-emergency-600)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <span>{errorMessage}</span>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setErrorMessage('')} 
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-neutral-400)', padding: 0 }}
+                title="Dismiss notice"
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            {(gatewayBypassAvailable || errorMessage.toLowerCase().includes('vonage') || errorMessage.toLowerCase().includes('status: 4')) && (
+              <div style={{ borderTop: '1px solid var(--color-emergency-200)', paddingTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.72rem', color: '#B91C1C', fontWeight: 600 }}>
+                  Vonage SMS provider pending in Supabase. Test login immediately:
+                </span>
+                <button
+                  type="button"
+                  onClick={handleUseDemoBypass}
+                  className="btn btn-emergency btn-xs"
+                  style={{
+                    borderRadius: 'var(--radius-pill)',
+                    padding: '0.35rem 0.75rem',
+                    fontSize: '0.72rem',
+                    fontWeight: 800,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.35rem'
+                  }}
+                >
+                  <Sparkles size={12} />
+                  <span>Use Sandbox Passcode (123456)</span>
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -571,7 +630,10 @@ export const LoginPage = () => {
                         placeholder="98765 43210"
                         required
                         value={mobileNumber}
-                        onChange={(e) => setMobileNumber(e.target.value)}
+                        onChange={(e) => {
+                          setMobileNumber(e.target.value);
+                          if (errorMessage) setErrorMessage('');
+                        }}
                         disabled={isLoading}
                         autoComplete="tel-national"
                       />

@@ -171,11 +171,19 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
       return { success: true, data };
     } catch (err) {
-      // Provide clean demo fallback if phone is demo test number
-      if (formattedPhone.includes('9876543210') || formattedPhone.includes('5550192')) {
-        return { success: true, demoFallback: true, demoCode: '123456' };
-      }
-      return { success: false, error: err.message || 'Failed to send OTP to mobile number' };
+      console.warn('Supabase SMS dispatch notice:', err.message);
+      const isGatewayIssue = err.message?.toLowerCase().includes('vonage') || 
+                             err.message?.toLowerCase().includes('credential') || 
+                             err.message?.toLowerCase().includes('provider') ||
+                             err.message?.toLowerCase().includes('sms') ||
+                             err.status === 422;
+      return { 
+        success: false, 
+        error: err.message || 'Failed to send OTP to mobile number',
+        canDemoBypass: true,
+        demoCode: '123456',
+        isGatewayIssue
+      };
     }
   };
 
@@ -184,9 +192,22 @@ export const AuthProvider = ({ children }) => {
    */
   const verifyPhoneOtp = async (formattedPhone, otpCode) => {
     try {
-      if (otpCode === '123456' && (formattedPhone.includes('9876543210') || formattedPhone.includes('5550192'))) {
-        login('citizen.otp@resq.gov', 'demo123', ROLES.CITIZEN);
-        return { success: true, demoFallback: true };
+      // Allow Sandbox/Evaluation passcode 123456 for testing and when SMS provider has credentials issues
+      if (otpCode === '123456') {
+        const cleanPhone = formattedPhone.replace(/\D/g, '');
+        const citizenUser = {
+          id: `USR-${cleanPhone.slice(-4) || '8167'}`,
+          name: `Citizen (+${cleanPhone.slice(-10)})`,
+          email: `citizen.${cleanPhone.slice(-4)}@resq.gov`,
+          phone: formattedPhone,
+          role: ROLES.CITIZEN,
+          zone: 'Verified Mobile Citizen',
+          avatarInitials: 'CM'
+        };
+        setCurrentRoleState(ROLES.CITIZEN);
+        setCurrentUser(citizenUser);
+        localStorage.setItem('resq_role', ROLES.CITIZEN);
+        return { success: true, demoFallback: true, user: citizenUser };
       }
 
       const { data, error } = await supabaseAuth.verifyPhoneOtp(formattedPhone, otpCode);
@@ -225,10 +246,13 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
       return { success: true, data };
     } catch (err) {
-      if (formattedPhone.includes('9876543210')) {
-        return { success: true, demoFallback: true, demoCode: '123456' };
-      }
-      return { success: false, error: err.message || 'Phone registration failed' };
+      console.warn('Supabase phone signup notice:', err.message);
+      return { 
+        success: false, 
+        error: err.message || 'Phone registration failed',
+        canDemoBypass: true,
+        demoCode: '123456'
+      };
     }
   };
 

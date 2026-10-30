@@ -162,3 +162,4 @@ export function getRealisticWeatherFallback(latitude, longitude) {
     ]
   };
 }
+

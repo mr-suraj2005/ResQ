@@ -280,3 +280,4 @@ function generateDeterministicPrediction(context, nearestHospital, nearestShelte
     analyzedAt: new Date().toISOString()
   };
 }
+
