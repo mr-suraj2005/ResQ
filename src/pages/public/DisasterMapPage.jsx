@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useEmergencyData } from '../../context/EmergencyDataContext';
+import { useUserLocation } from '../../context/LocationContext';
 import { DisasterLeafletMap } from '../../components/map/DisasterLeafletMap';
 import { AIAnalysisPanel } from '../../components/ai/AIAnalysisPanel';
 import { LiveLocationDisasterPredictor } from '../../components/ai/LiveLocationDisasterPredictor';
@@ -27,6 +28,7 @@ import {
 
 export const DisasterMapPage = () => {
   const { incidents, shelters, blockedRoads, responseResources } = useEmergencyData();
+  const { location, isDetected } = useUserLocation();
 
   // Sidebar Tab: 'LAYERS' | 'AI_ENGINE'
   const [activeTab, setActiveTab] = useState('LAYERS');
@@ -71,16 +73,21 @@ export const DisasterMapPage = () => {
       const lng = parseFloat(paramLng);
       if (!isNaN(lat) && !isNaN(lng)) return [lat, lng];
     }
+    if (location && location.latitude != null && location.longitude != null) {
+      return [location.latitude, location.longitude];
+    }
     return [21.1458, 79.0882];
-  }, [paramLat, paramLng]);
+  }, [paramLat, paramLng, location]);
 
   const mapZoom = useMemo(() => {
     if (paramZoom) {
       const z = parseInt(paramZoom);
       if (!isNaN(z)) return z;
     }
-    return (paramLat && paramLng) ? 10 : 5;
-  }, [paramZoom, paramLat, paramLng]);
+    if (paramLat && paramLng) return 10;
+    if (location && location.latitude != null && location.longitude != null) return 10;
+    return 5;
+  }, [paramZoom, paramLat, paramLng, location]);
 
   // 5 Tactical Layer Toggles
   const [layerVisibility, setLayerVisibility] = useState({
@@ -507,6 +514,7 @@ export const DisasterMapPage = () => {
           selectedTarget={selectedTarget}
           center={mapCenter}
           zoom={mapZoom}
+          userLocation={location}
           onMarkerClick={handleSelectIncident}
         />
       </main>

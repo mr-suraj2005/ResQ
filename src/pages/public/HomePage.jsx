@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { useEmergencyData } from '../../context/EmergencyDataContext';
+import { useUserLocation } from '../../context/LocationContext';
 import { liveTelemetryService } from '../../services/liveTelemetryService';
 import { SeverityBadge } from '../../components/common/SeverityBadge';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { LiveLocationDisasterPredictor } from '../../components/ai/LiveLocationDisasterPredictor';
+import { HomeLocationSection } from '../../components/home/HomeLocationSection';
 import { 
   AlertTriangle, 
   Building2, 
@@ -37,6 +39,27 @@ const miniPinIcon = L.divIcon({
   iconAnchor: [7, 7]
 });
 
+// User location pulsating marker for mini preview
+const userPulseIcon = L.divIcon({
+  className: 'mini-user-pulse-pin',
+  html: `<div style="position: relative; width: 18px; height: 18px;">
+    <div style="position: absolute; inset: -5px; border-radius: 50%; background: rgba(37, 99, 235, 0.4); animation: pulse 1.5s infinite;"></div>
+    <div style="width: 18px; height: 18px; background: #2563EB; border: 2.5px solid #FFFFFF; border-radius: 50%; box-shadow: 0 0 10px #2563EB;"></div>
+  </div>`,
+  iconSize: [18, 18],
+  iconAnchor: [9, 9]
+});
+
+function RecenterMiniMap({ center, zoom }) {
+  const map = useMap();
+  useEffect(() => {
+    if (center && center[0] != null) {
+      map.flyTo(center, zoom, { animate: true, duration: 1.2 });
+    }
+  }, [center, zoom, map]);
+  return null;
+}
+
 const CATEGORY_ICONS = {
   FLOOD: Droplets,
   FIRE: Flame,
@@ -48,6 +71,7 @@ const CATEGORY_ICONS = {
 
 export const HomePage = () => {
   const navigate = useNavigate();
+  const { location, isDetected } = useUserLocation();
   const { 
     incidents, 
     activeIncidents, 
@@ -90,6 +114,11 @@ export const HomePage = () => {
   return (
     <div className="container page-container" style={{ paddingTop: '1rem', paddingBottom: '3.5rem' }}>
       
+      {/* =========================================================================
+          LOCATION-FIRST EXPERIENCE: Prominent location access section at the very top
+          ========================================================================= */}
+      <HomeLocationSection />
+
       {/* =========================================================================
           HERO SPLIT VIEW: Left (Headline & KPIs) + Right (Mini Map & Telemetry)
           ========================================================================= */}
@@ -151,7 +180,7 @@ export const HomePage = () => {
               </Link>
 
               <Link 
-                to="/map" 
+                to={location?.latitude != null ? `/map?lat=${location.latitude}&lng=${location.longitude}&zoom=11` : '/map'} 
                 className="btn btn-primary btn-lg" 
                 style={{ 
                   borderRadius: 'var(--radius-pill)', 
@@ -271,12 +300,12 @@ export const HomePage = () => {
               boxShadow: 'var(--shadow-sm)',
               cursor: 'pointer'
             }}
-            onClick={() => navigate('/map')}
-            title="Click to launch interactive Live Threat Map"
+            onClick={() => navigate(location?.latitude != null ? `/map?lat=${location.latitude}&lng=${location.longitude}&zoom=11` : '/map')}
+            title="Click to launch interactive Live Threat Map centered on this area"
           >
             <MapContainer
-              center={[21.1458, 79.0882]}
-              zoom={4}
+              center={location?.latitude != null ? [location.latitude, location.longitude] : [21.1458, 79.0882]}
+              zoom={location?.latitude != null ? 8 : 4}
               scrollWheelZoom={false}
               zoomControl={false}
               dragging={false}
@@ -286,6 +315,12 @@ export const HomePage = () => {
                 attribution='&copy; OpenStreetMap'
                 url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
+              {location?.latitude != null && (
+                <>
+                  <Marker position={[location.latitude, location.longitude]} icon={userPulseIcon} />
+                  <RecenterMiniMap center={[location.latitude, location.longitude]} zoom={8} />
+                </>
+              )}
               {incidents.slice(0, 6).map(inc => (
                 <Marker 
                   key={inc.id} 
@@ -318,7 +353,11 @@ export const HomePage = () => {
             >
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                 <Compass size={14} color="#60A5FA" />
-                <span>Live Tactical GIS &bull; {incidents.length} Mapped India Pins</span>
+                <span>
+                  {location?.city 
+                    ? `Active Area: ${location.city} • Localized Threat Telemetry` 
+                    : `Live Tactical GIS • ${incidents.length} Mapped India Pins`}
+                </span>
               </span>
               <span style={{ color: '#93C5FD', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
                 Explore Map &rarr;

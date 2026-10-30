@@ -48,6 +48,9 @@ export const LiveLocationDisasterPredictor = ({ compact = false }) => {
   useEffect(() => {
     let isMounted = true;
     const runAnalysis = async () => {
+      if (!location || location.latitude == null || location.longitude == null) {
+        return;
+      }
       setIsPredicting(true);
       try {
         const weather = await fetchLiveAndPredictiveWeather(location.latitude, location.longitude);
@@ -73,7 +76,7 @@ export const LiveLocationDisasterPredictor = ({ compact = false }) => {
     return () => {
       isMounted = false;
     };
-  }, [location.latitude, location.longitude, location.city, proximities]);
+  }, [location?.latitude, location?.longitude, location?.city, proximities]);
 
   const handleCityChange = (e) => {
     const val = e.target.value;
@@ -82,6 +85,7 @@ export const LiveLocationDisasterPredictor = ({ compact = false }) => {
   };
 
   const handleManualReRun = async () => {
+    if (!location || location.latitude == null) return;
     setIsPredicting(true);
     try {
       const weather = await fetchLiveAndPredictiveWeather(location.latitude, location.longitude);
@@ -127,6 +131,46 @@ export const LiveLocationDisasterPredictor = ({ compact = false }) => {
         ? '#FDE68A' 
         : '#BBF7D0';
 
+  // If no location has been selected or granted yet, prompt user to enable location
+  if (!location || location.latitude == null) {
+    return (
+      <section 
+        className="card"
+        style={{
+          backgroundColor: '#FFFFFF',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px dashed var(--color-primary-300)',
+          padding: '2.25rem 1.5rem',
+          textAlign: 'center',
+          boxShadow: 'var(--shadow-sm)',
+          marginBottom: '2.5rem'
+        }}
+        aria-label="AI Disaster Prediction Pending Location"
+      >
+        <div style={{ maxWidth: '520px', margin: '0 auto' }}>
+          <div style={{ width: 48, height: 48, borderRadius: '50%', backgroundColor: 'var(--color-primary-50)', color: 'var(--color-primary-600)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.85rem' }}>
+            <Sparkles size={24} />
+          </div>
+          <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 800, color: 'var(--color-neutral-900)' }}>
+            AI Real-Time Telemetry &amp; Predictive Disaster Engine
+          </h3>
+          <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-neutral-600)', marginTop: '0.4rem', lineHeight: 1.55 }}>
+            Enable your location at the top of the homepage to activate real-time Open-Meteo multi-day weather forecasts, seismic vulnerability assessment, and emergency management protocols tailored to your coordinates.
+          </p>
+          <button
+            type="button"
+            onClick={detectLiveLocation}
+            className="btn btn-primary btn-sm"
+            style={{ marginTop: '1.15rem', borderRadius: 'var(--radius-pill)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+          >
+            <LocateFixed size={14} />
+            <span>Use My Current Location</span>
+          </button>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section 
       style={{
@@ -157,7 +201,7 @@ export const LiveLocationDisasterPredictor = ({ compact = false }) => {
               }}
             />
             <span style={{ fontSize: 'var(--text-xs)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#93C5FD' }}>
-              {location.isLiveGps ? 'Live Device GPS Active' : 'Simulated Regional Zone'}
+              {location.isLiveGps ? 'Live Device GPS Active' : 'Selected Regional Hub'}
             </span>
           </div>
 

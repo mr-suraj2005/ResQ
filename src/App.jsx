@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { EmergencyDataProvider } from './context/EmergencyDataContext';
+import { LocationProvider } from './context/LocationContext';
 
 // Layouts
 import { MainLayout } from './layouts/MainLayout';
@@ -25,28 +26,30 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <EmergencyDataProvider>
-          <Routes>
-            {/* Public & Citizen Portal */}
-            <Route path="/" element={<MainLayout />}>
-              <Route index element={<HomePage />} />
-              <Route path="map" element={<DisasterMapPage />} />
-              <Route path="alerts" element={<AlertsPage />} />
-              <Route path="shelters" element={<ShelterFinderPage />} />
-              <Route path="report" element={<ReportEmergencyPage />} />
-              <Route path="my-reports" element={<CitizenReportsPage />} />
-              <Route path="login" element={<LoginPage />} />
-              <Route path="official-login" element={<LoginPage />} />
-              <Route path="register" element={<RegisterPage />} />
-            </Route>
+          <LocationProvider>
+            <Routes>
+              {/* Public & Citizen Portal */}
+              <Route path="/" element={<MainLayout />}>
+                <Route index element={<HomePage />} />
+                <Route path="map" element={<DisasterMapPage />} />
+                <Route path="alerts" element={<AlertsPage />} />
+                <Route path="shelters" element={<ShelterFinderPage />} />
+                <Route path="report" element={<ReportEmergencyPage />} />
+                <Route path="my-reports" element={<CitizenReportsPage />} />
+                <Route path="login" element={<LoginPage />} />
+                <Route path="official-login" element={<LoginPage />} />
+                <Route path="register" element={<RegisterPage />} />
+              </Route>
 
-            {/* Emergency Responder Portal */}
-            <Route path="/responder" element={<ResponderLayout />}>
-              <Route index element={<ResponderDashboardPage />} />
-            </Route>
+              {/* Emergency Responder Portal */}
+              <Route path="/responder" element={<ResponderLayout />}>
+                <Route index element={<ResponderDashboardPage />} />
+              </Route>
 
-            {/* Fallback to Home */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+              {/* Fallback to Home */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </LocationProvider>
         </EmergencyDataProvider>
       </AuthProvider>
     </BrowserRouter>

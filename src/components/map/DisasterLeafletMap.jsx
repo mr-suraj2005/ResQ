@@ -87,6 +87,21 @@ function MapController({ targetCoords, zoom = 14 }) {
   return null;
 }
 
+const userLocationDivIcon = L.divIcon({
+  className: 'resq-user-location-marker',
+  html: `
+    <div style="position: relative; width: 26px; height: 26px;">
+      <div style="position: absolute; inset: -6px; border-radius: 50%; background: rgba(37, 99, 235, 0.35); animation: pulse 1.8s infinite ease-out;"></div>
+      <div style="width: 26px; height: 26px; background: #2563EB; border: 3px solid #FFFFFF; border-radius: 50%; box-shadow: 0 0 12px rgba(37, 99, 235, 0.8); display: flex; align-items: center; justify-content: center; color: white;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+      </div>
+    </div>
+  `,
+  iconSize: [26, 26],
+  iconAnchor: [13, 13],
+  popupAnchor: [0, -16]
+});
+
 export const DisasterLeafletMap = ({
   incidents = [],
   shelters = [],
@@ -103,6 +118,7 @@ export const DisasterLeafletMap = ({
   selectedTarget = null,
   center = [21.1458, 79.0882],
   zoom = 5,
+  userLocation = null,
   onMarkerClick
 }) => {
   const markerRefs = useRef({});
@@ -146,6 +162,34 @@ export const DisasterLeafletMap = ({
         />
 
         {targetCoords && <MapController targetCoords={targetCoords} zoom={zoom > 5 ? zoom : 12} />}
+
+        {/* User GPS Location Marker */}
+        {userLocation && userLocation.latitude != null && userLocation.longitude != null && (
+          <Marker
+            position={[userLocation.latitude, userLocation.longitude]}
+            icon={userLocationDivIcon}
+            zIndexOffset={1000}
+          >
+            <Popup>
+              <div style={{ padding: '0.4rem', minWidth: '180px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#1D4ED8', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  <Navigation size={13} />
+                  <span>Your Current Location</span>
+                </div>
+                <div style={{ fontWeight: 800, color: '#0F172A', fontSize: '0.9rem', marginTop: '0.2rem' }}>
+                  {userLocation.locality ? `${userLocation.locality}, ` : ''}{userLocation.city}
+                </div>
+                <div style={{ fontSize: '0.72rem', color: '#64748B', marginTop: '0.15rem' }}>
+                  {userLocation.state}, {userLocation.country || 'India'}
+                </div>
+                <div style={{ fontSize: '0.7rem', color: '#1E293B', fontFamily: 'monospace', marginTop: '0.35rem', backgroundColor: '#EFF6FF', padding: '0.2rem 0.4rem', borderRadius: '4px', border: '1px solid #BFDBFE' }}>
+                  {userLocation.latitude.toFixed(4)}° N, {userLocation.longitude.toFixed(4)}° E
+                  {userLocation.accuracy && ` (±${userLocation.accuracy}m)`}
+                </div>
+              </div>
+            </Popup>
+          </Marker>
+        )}
 
         {/* =========================================================================
             INCIDENT MARKERS (Critical, High, Unverified)
