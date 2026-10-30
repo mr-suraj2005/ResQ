@@ -222,14 +222,25 @@
   border-radius: var(--radius-pill);
   padding: 8px 20px;
   background: rgba(10, 25, 47, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 10px 25px -5px rgba(10, 25, 47, 0.25);
   color: #FFFFFF;
   pointer-events: auto;
   position: relative;
-  transition: all var(--transition-normal);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dynamic Frosted Glass Blur Upon Scrolling */
+.main-navbar.is-scrolled {
+  background: rgba(10, 25, 47, 0.68) !important;
+  backdrop-filter: blur(24px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+  border-color: rgba(255, 255, 255, 0.24) !important;
+  box-shadow: 0 16px 40px -6px rgba(2, 6, 23, 0.55), 0 0 1px 1px rgba(255, 255, 255, 0.16) !important;
+  margin: 8px auto;
+  padding: 6px 18px;
 }
 
 .navbar-inner {

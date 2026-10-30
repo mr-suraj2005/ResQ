@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useAuth, ROLES } from '../../context/AuthContext';
 import { useEmergencyData } from '../../context/EmergencyDataContext';
@@ -21,15 +21,31 @@ import {
 
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { currentRole, currentUser, logout, isAdmin, isResponder } = useAuth();
   const { criticalAlerts, pendingIncidents } = useEmergencyData();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 15) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const closeMenu = () => setMobileMenuOpen(false);
 
   return (
-    <header className="main-navbar-wrapper" role="banner">
-      <div className="main-navbar">
+    <header className={`main-navbar-wrapper ${isScrolled ? 'is-scrolled' : ''}`} role="banner">
+      <div className={`main-navbar ${isScrolled ? 'is-scrolled' : ''}`}>
         <div className="navbar-inner">
           {/* Brand */}
           <Link to="/" className="navbar-brand" onClick={closeMenu}>

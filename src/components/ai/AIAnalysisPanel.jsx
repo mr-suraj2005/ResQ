@@ -346,3 +346,4 @@ export const AIAnalysisPanel = ({ compact = false, className = '' }) => {
     </div>
   );
 };
+

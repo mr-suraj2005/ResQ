@@ -75,3 +75,4 @@ export const initialResponseResources = [
     contact: "HazMat Operations: 011-26701700"
   }
 ];
+
