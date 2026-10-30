@@ -169,7 +169,7 @@ export const ShelterFinderPage = () => {
           boxShadow: 'var(--shadow-sm)'
         }}
       >
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 1.9fr)', gap: '1.5rem', alignItems: 'center', marginBottom: '1.25rem' }}>
+        <div className="shelter-filter-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '1.5rem', alignItems: 'center', marginBottom: '1.25rem' }}>
           <div>
             <label className="form-label" style={{ fontSize: 'var(--text-xs)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.4rem' }}>
               Search National Facilities
@@ -277,7 +277,7 @@ export const ShelterFinderPage = () => {
           }
         />
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '1.5rem' }}>
           {filteredShelters.map((shelter) => {
             const isHospital = shelter.type === 'Hospital' || shelter.type === 'HOSPITAL';
             const isResponseForce = shelter.type === 'Response Force';

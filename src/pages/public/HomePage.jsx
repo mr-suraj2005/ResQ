@@ -94,29 +94,11 @@ export const HomePage = () => {
           HERO SPLIT VIEW: Left (Headline & KPIs) + Right (Mini Map & Telemetry)
           ========================================================================= */}
       <section 
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'minmax(0, 1.25fr) minmax(0, 1fr)',
-          gap: '1.75rem',
-          marginBottom: '2.5rem',
-          alignItems: 'stretch'
-        }}
+        className="home-hero-section"
         aria-labelledby="hero-title"
       >
         {/* Left Column */}
-        <div 
-          style={{
-            backgroundColor: 'var(--color-primary-900)',
-            color: '#FFFFFF',
-            borderRadius: 'var(--radius-lg)',
-            padding: '2.25rem 2rem',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
-            boxShadow: 'var(--shadow-md)',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between'
-          }}
-        >
+        <div className="home-hero-left">
           <div>
             {/* Status Badge */}
             <div style={{ 
@@ -140,7 +122,7 @@ export const HomePage = () => {
             <h1 
               id="hero-title"
               style={{ 
-                fontSize: 'clamp(1.75rem, 2.8vw, 2.4rem)', 
+                fontSize: 'clamp(1.6rem, 3.2vw, 2.4rem)', 
                 fontWeight: 900, 
                 lineHeight: 1.15, 
                 color: '#FFFFFF',
@@ -152,7 +134,7 @@ export const HomePage = () => {
             </h1>
 
             {/* 2 Oversized Pill Action Buttons */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap', marginBottom: '2rem' }}>
+            <div className="home-hero-actions">
               <Link 
                 to="/report" 
                 className="btn btn-emergency btn-lg" 
@@ -188,7 +170,7 @@ export const HomePage = () => {
           </div>
 
           {/* 4 Circular KPI Stat Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.85rem' }}>
+          <div className="home-hero-kpi-grid">
             {/* KPI 1 */}
             <div 
               style={{ 
@@ -276,7 +258,7 @@ export const HomePage = () => {
         </div>
 
         {/* Right Column: Mini Map & Telemetry Widget */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0, width: '100%' }}>
           {/* Mini Interactive Map Preview */}
           <div 
             className="map-picker-wrapper"
@@ -373,7 +355,7 @@ export const HomePage = () => {
             </div>
 
             {/* Environmental Metric Badges */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem', marginBottom: '0.75rem' }}>
+            <div className="home-telemetry-metrics">
               {/* Wind */}
               <div style={{ backgroundColor: 'var(--color-neutral-50)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '0.5rem', textAlign: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', color: 'var(--color-primary-700)', fontSize: '0.7rem', fontWeight: 600 }}>
@@ -418,7 +400,7 @@ export const HomePage = () => {
             </div>
 
             {/* Hydro & Grid Sensors */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--color-border)', paddingTop: '0.5rem', fontSize: '0.72rem', color: 'var(--color-neutral-600)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--color-border)', paddingTop: '0.5rem', fontSize: '0.72rem', color: 'var(--color-neutral-600)', flexWrap: 'wrap', gap: '0.35rem' }}>
               <span>Hydro Surge Sensor: <strong>{sensors?.waterLevelMeters || '2.40'}m</strong></span>
               <span>Grid Stress: <strong>{sensors?.gridLoadPercent || 82}%</strong></span>
               <span style={{ color: 'var(--color-emergency-600)', fontWeight: 700 }}>Threat: HIGH</span>
@@ -438,7 +420,7 @@ export const HomePage = () => {
           VISUAL INCIDENT FEED: 3 High-Impact Cards (Icon, Badges, Title, Affected)
           ========================================================================= */}
       <section style={{ marginBottom: '2.75rem' }} aria-labelledby="visual-feed-heading">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
           <div>
             <h2 id="visual-feed-heading" style={{ fontSize: 'var(--text-xl)', fontWeight: 800, color: 'var(--color-neutral-900)' }}>
               Live Incident Stream
@@ -458,7 +440,7 @@ export const HomePage = () => {
           </Link>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '1.25rem' }}>
           {visualFeed.map((incident) => {
             const CategoryIcon = CATEGORY_ICONS[incident.category] || AlertTriangle;
             const people = Number(incident.peopleAffected) || 12;
@@ -568,7 +550,7 @@ export const HomePage = () => {
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '1.25rem' }}>
           {/* Card 1: Flood Protocol */}
           <div 
             className="card" 

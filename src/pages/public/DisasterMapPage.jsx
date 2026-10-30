@@ -148,7 +148,6 @@ export const DisasterMapPage = () => {
         className="map-sidebar" 
         style={{ 
           display: isSidebarOpen ? 'flex' : 'none', 
-          width: '380px',
           backgroundColor: '#FFFFFF',
           borderRight: '1px solid var(--color-border)',
           boxShadow: 'var(--shadow-md)',

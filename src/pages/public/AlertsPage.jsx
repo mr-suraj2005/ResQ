@@ -53,7 +53,7 @@ export const AlertsPage = () => {
       {/* Filter and Search Bar Row */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.75rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-          <div style={{ flex: '1 1 320px', maxWidth: '480px' }}>
+          <div style={{ flex: '1 1 260px', maxWidth: '480px', width: '100%', minWidth: 0 }}>
             <SearchBar
               value={searchQuery}
               onChange={setSearchQuery}

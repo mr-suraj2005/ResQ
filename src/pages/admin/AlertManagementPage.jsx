@@ -94,7 +94,7 @@ export const AlertManagementPage = () => {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.25fr 1fr', gap: '2rem', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 360px), 1fr))', gap: '2rem', alignItems: 'start' }}>
         {/* Left: Broadcast Publisher Form */}
         <div className="card" style={{ padding: '1.75rem' }}>
           <div className="card-header" style={{ padding: '0 0 1rem 0', borderBottom: '1px solid var(--color-border)', marginBottom: '1.25rem' }}>

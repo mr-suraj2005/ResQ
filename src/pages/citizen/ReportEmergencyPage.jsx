@@ -134,12 +134,13 @@ export const ReportEmergencyPage = () => {
         style={{
           backgroundColor: '#FEF2F2',
           border: '1px solid #FECACA',
-          borderRadius: 'var(--radius-pill)',
-          padding: '0.65rem 1.25rem',
+          borderRadius: 'var(--radius-lg)',
+          padding: '0.65rem 1rem',
           marginBottom: '1.25rem',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          flexWrap: 'wrap',
           gap: '0.75rem'
         }}
       >
@@ -181,7 +182,7 @@ export const ReportEmergencyPage = () => {
             STEP 1: WHAT (2x3 Visual Category Grid + Priority Switch)
             ========================================================================= */}
         <div style={{ marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.65rem' }}>
             <span style={{ fontSize: 'var(--text-xs)', fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-primary-900)', letterSpacing: '0.04em' }}>
               Step 1: What is the Emergency?
             </span>
@@ -266,7 +267,7 @@ export const ReportEmergencyPage = () => {
             STEP 2: WHERE (Location Picker Map & GPS Locator)
             ========================================================================= */}
         <div style={{ marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.5rem' }}>
             <span style={{ fontSize: 'var(--text-xs)', fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-primary-900)', letterSpacing: '0.04em' }}>
               Step 2: Where is the Incident?
             </span>

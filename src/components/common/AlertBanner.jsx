@@ -32,10 +32,10 @@ export const AlertBanner = () => {
   return (
     <div className={`alert-banner ${bannerClass}`} role="region" aria-label="Official Emergency Broadcast">
       <div className="alert-banner-content">
-        <Icon size={18} strokeWidth={2} />
-        <div>
+        <Icon size={18} strokeWidth={2} style={{ flexShrink: 0 }} />
+        <div style={{ flex: '1 1 auto', minWidth: 0 }}>
           <span className="alert-banner-tag">{alert.severity || 'NOTICE'}</span>
-          <span className="alert-banner-title" style={{ marginLeft: '0.5rem' }}>
+          <span className="alert-banner-title" style={{ marginLeft: '0.5rem', wordBreak: 'break-word' }}>
             {alert.title || 'Official Civic Directive'}
           </span>
           {zones.length > 0 && (
@@ -44,7 +44,7 @@ export const AlertBanner = () => {
             </span>
           )}
         </div>
-        <Link to="/alerts" className="alert-banner-link">
+        <Link to="/alerts" className="alert-banner-link" style={{ flexShrink: 0 }}>
           View Directives <ChevronRight size={12} style={{ display: 'inline', verticalAlign: '-1px' }} />
         </Link>
       </div>
@@ -54,7 +54,7 @@ export const AlertBanner = () => {
         onClick={() => setDismissed(true)}
         className="btn-ghost btn-xs"
         aria-label="Dismiss Alert Banner"
-        style={{ padding: '0.2rem', color: 'inherit', opacity: 0.7 }}
+        style={{ padding: '0.2rem', color: 'inherit', opacity: 0.7, flexShrink: 0 }}
       >
         <X size={16} />
       </button>

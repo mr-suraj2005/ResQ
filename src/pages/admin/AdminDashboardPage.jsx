@@ -326,66 +326,68 @@ export const AdminDashboardPage = () => {
               </p>
             </div>
           ) : (
-            <table className="civic-table">
-              <thead>
-                <tr>
-                  <th>Tracking ID</th>
-                  <th>Incident Summary &amp; Address</th>
-                  <th>Classification</th>
-                  <th>Assessed Severity</th>
-                  <th>Reporting Party</th>
-                  <th style={{ textAlign: 'right' }}>Direct Triage Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pendingIncidents.map(inc => (
-                  <tr key={inc.id}>
-                    <td><span className="mono-id">{inc.id}</span></td>
-                    <td style={{ maxWidth: '340px' }}>
-                      <div style={{ fontWeight: 600, color: 'var(--color-neutral-900)' }}>{inc.title}</div>
-                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-neutral-500)', display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.15rem' }}>
-                        <MapPin size={11} color="var(--color-primary-600)" />
-                        <span>{inc.address}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--color-neutral-700)' }}>
-                        {inc.category}
-                      </span>
-                    </td>
-                    <td><SeverityBadge severity={inc.severity} /></td>
-                    <td>
-                      <div style={{ fontSize: 'var(--text-xs)', fontWeight: 500 }}>{inc.reportedBy}</div>
-                      <div className="timestamp">{new Date(inc.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
-                        <button
-                          type="button"
-                          className="btn btn-primary btn-xs"
-                          onClick={() => verifyIncident(inc.id, currentUser.name)}
-                          title="Authorize and verify incident"
-                        >
-                          <CheckCircle size={13} />
-                          <span>Verify</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          className="btn btn-outline btn-xs"
-                          style={{ color: 'var(--color-emergency-600)', borderColor: 'var(--color-emergency-200)' }}
-                          onClick={() => rejectIncident(inc.id, 'Deemed duplicate or non-actionable by EOC dispatcher', currentUser.name)}
-                          title="Reject report"
-                        >
-                          <XCircle size={13} />
-                          <span>Reject</span>
-                        </button>
-                      </div>
-                    </td>
+            <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <table className="civic-table">
+                <thead>
+                  <tr>
+                    <th>Tracking ID</th>
+                    <th>Incident Summary &amp; Address</th>
+                    <th>Classification</th>
+                    <th>Assessed Severity</th>
+                    <th>Reporting Party</th>
+                    <th style={{ textAlign: 'right' }}>Direct Triage Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {pendingIncidents.map(inc => (
+                    <tr key={inc.id}>
+                      <td><span className="mono-id">{inc.id}</span></td>
+                      <td style={{ maxWidth: '340px' }}>
+                        <div style={{ fontWeight: 600, color: 'var(--color-neutral-900)' }}>{inc.title}</div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-neutral-500)', display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.15rem' }}>
+                          <MapPin size={11} color="var(--color-primary-600)" />
+                          <span>{inc.address}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--color-neutral-700)' }}>
+                          {inc.category}
+                        </span>
+                      </td>
+                      <td><SeverityBadge severity={inc.severity} /></td>
+                      <td>
+                        <div style={{ fontSize: 'var(--text-xs)', fontWeight: 500 }}>{inc.reportedBy}</div>
+                        <div className="timestamp">{new Date(inc.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-xs"
+                            onClick={() => verifyIncident(inc.id, currentUser.name)}
+                            title="Authorize and verify incident"
+                          >
+                            <CheckCircle size={13} />
+                            <span>Verify</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            className="btn btn-outline btn-xs"
+                            style={{ color: 'var(--color-emergency-600)', borderColor: 'var(--color-emergency-200)' }}
+                            onClick={() => rejectIncident(inc.id, 'Deemed duplicate or non-actionable by EOC dispatcher', currentUser.name)}
+                            title="Reject report"
+                          >
+                            <XCircle size={13} />
+                            <span>Reject</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </section>

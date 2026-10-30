@@ -245,7 +245,7 @@ export const AIAnalysisPanel = ({ compact = false, className = '' }) => {
             <span>Active Impact Hotspots</span>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: compact ? '1fr' : '1fr 1fr', gap: '0.65rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: compact ? '1fr' : 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '0.65rem' }}>
             {analysis.hotspots.map((hs, idx) => (
               <div 
                 key={idx} 

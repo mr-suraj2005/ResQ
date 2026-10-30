@@ -142,19 +142,7 @@ export const LiveLocationDisasterPredictor = ({ compact = false }) => {
       {/* =======================================================================
           TOP BAR: Live Location Pill + Quick Controls + City Switcher
           ======================================================================= */}
-      <div 
-        style={{
-          padding: compact ? '1rem' : '1.25rem 1.75rem',
-          backgroundColor: '#0A192F',
-          color: '#FFFFFF',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '1rem',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.12)'
-        }}
-      >
+      <div className="ai-predictor-topbar">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
           {/* Live Pulsing Dot */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
@@ -257,12 +245,8 @@ export const LiveLocationDisasterPredictor = ({ compact = false }) => {
           3-COLUMN DASHBOARD GRID
           ======================================================================= */}
       <div 
-        style={{ 
-          display: 'grid', 
-          gridTemplateColumns: compact ? '1fr' : 'repeat(auto-fit, minmax(320px, 1fr))', 
-          gap: compact ? '1rem' : '1.5rem', 
-          padding: compact ? '1rem' : '1.75rem' 
-        }}
+        className="ai-predictor-grid"
+        style={compact ? { gridTemplateColumns: '1fr', gap: '1rem', padding: '1rem' } : undefined}
       >
         {/* =====================================================================
             COLUMN 1: LIVE & 72-HOUR METEOROLOGICAL TELEMETRY CARD
@@ -372,8 +356,8 @@ export const LiveLocationDisasterPredictor = ({ compact = false }) => {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.25rem', textAlign: 'center' }}>
               {(weatherData?.fiveDayForecast || []).map((day, idx) => (
-                <div key={idx} style={{ backgroundColor: '#FFFFFF', padding: '0.45rem 0.2rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}>
-                  <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--color-neutral-600)' }}>{day.dayName}</div>
+                <div key={idx} style={{ backgroundColor: '#FFFFFF', padding: '0.45rem 0.2rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', minWidth: 0 }}>
+                  <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--color-neutral-600)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{day.dayName}</div>
                   <div style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--color-neutral-900)', marginTop: '0.15rem' }}>{day.tempMax}°</div>
                   <div style={{ fontSize: '0.62rem', color: day.precipSum > 10 ? '#DC2626' : '#64748B' }}>{day.precipSum}mm</div>
                 </div>

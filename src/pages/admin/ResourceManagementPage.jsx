@@ -81,7 +81,7 @@ export const ResourceManagementPage = () => {
       </div>
 
       {/* Tab Switcher */}
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.75rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.75rem' }}>
         <button
           type="button"
           className={`btn ${activeTab === 'shelters' ? 'btn-primary' : 'btn-outline'}`}

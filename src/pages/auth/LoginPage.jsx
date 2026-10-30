@@ -176,7 +176,7 @@ export const LoginPage = () => {
           boxShadow: 'var(--shadow-md)',
           border: '1px solid var(--color-border)',
           backgroundColor: 'var(--color-bg-surface)',
-          padding: '2.25rem 2rem'
+          padding: 'clamp(1.25rem, 5vw, 2.25rem) clamp(1rem, 4vw, 2rem)'
         }}
       >
         {/* Header Branding */}
@@ -402,7 +402,7 @@ export const LoginPage = () => {
               </label>
 
               <div 
-                style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem' }}
+                style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(4px, 1.5vw, 8px)' }}
                 onPaste={handleOtpPaste}
               >
                 {otpDigits.map((digit, idx) => (
@@ -414,10 +414,11 @@ export const LoginPage = () => {
                     maxLength={1}
                     className="form-input"
                     style={{
-                      width: '44px',
-                      height: '52px',
+                      width: 'clamp(34px, 10.5vw, 44px)',
+                      height: 'clamp(44px, 12.5vw, 52px)',
+                      padding: 0,
                       textAlign: 'center',
-                      fontSize: '1.35rem',
+                      fontSize: 'clamp(1.1rem, 4vw, 1.35rem)',
                       fontWeight: 800,
                       borderRadius: 'var(--radius-md)',
                       border: digit ? '2px solid var(--color-primary-600)' : '1px solid var(--color-border)',

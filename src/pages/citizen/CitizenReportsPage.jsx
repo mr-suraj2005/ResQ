@@ -63,7 +63,7 @@ export const CitizenReportsPage = () => {
         subtitle="Live tracking console for submitted emergency reports. View validation credentials, CAD unit dispatches, and tactical responder field logs."
         breadcrumb="CITIZEN PORTAL / MY REPORTS"
         actions={
-          <div style={{ display: 'flex', gap: '0.65rem' }}>
+          <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
             <Link to="/map" className="btn btn-outline btn-sm">
               <Compass size={15} />
               <span>View On Live Map</span>
@@ -78,7 +78,7 @@ export const CitizenReportsPage = () => {
 
       {/* Control Bar */}
       <div className="card" style={{ padding: '1rem', marginBottom: '1.5rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1rem', alignItems: 'center' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: '1rem', alignItems: 'center' }}>
           <SearchBar
             value={searchQuery}
             onChange={setSearchQuery}
