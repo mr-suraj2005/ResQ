@@ -1845,3 +1845,202 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
+
+/* ==========================================================================
+   HOMEPAGE REDESIGN — ALTERNATING BACKGROUND SECTIONS & ENHANCED SPACING
+   ========================================================================== */
+.home-redesign-wrapper {
+  width: 100%;
+  overflow-x: hidden;
+  background-color: #F8FAFC;
+}
+
+.home-section {
+  width: 100%;
+  padding: 3.75rem 0;
+  position: relative;
+}
+
+.home-section-hero {
+  background: linear-gradient(135deg, #0A192F 0%, #0D2040 50%, #0F172A 100%);
+  color: #FFFFFF;
+  padding: 4rem 0 4.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.home-section-white {
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.home-section-alt {
+  background-color: #F8FAFC;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.home-section-dark {
+  background: #0A192F;
+  color: #FFFFFF;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.home-section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.home-section-title {
+  font-size: clamp(1.4rem, 2.6vw, 1.85rem);
+  font-weight: 850;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.35rem;
+  line-height: 1.25;
+  color: var(--color-neutral-900);
+}
+
+.home-section-title-light {
+  color: #FFFFFF;
+}
+
+.home-section-subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+  margin: 0;
+  max-width: 680px;
+  line-height: 1.55;
+}
+
+.home-section-subtitle-light {
+  color: #94A3B8;
+}
+
+/* Two-Column Hero Grid */
+.home-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 2.75rem;
+  align-items: center;
+}
+
+.home-hero-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.home-hero-slider-wrap {
+  min-width: 0;
+  width: 100%;
+}
+
+.home-hero-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  margin-top: 1.75rem;
+  margin-bottom: 2rem;
+}
+
+.home-hero-kpi-bar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding-top: 1.5rem;
+}
+
+.home-kpi-card {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+/* Section Grids */
+.home-telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 1.25rem;
+}
+
+.home-shelter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 1.5rem;
+}
+
+.home-incident-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 1.5rem;
+}
+
+.home-prep-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .home-section {
+    padding: 2.75rem 0;
+  }
+  .home-section-hero {
+    padding: 3rem 0 3.5rem;
+  }
+  .home-hero-grid {
+    grid-template-columns: 1fr;
+    gap: 2.25rem;
+  }
+  .home-hero-kpi-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .home-section {
+    padding: 2.25rem 0;
+  }
+  .home-section-hero {
+    padding: 2.25rem 0 2.75rem;
+  }
+  .home-hero-actions-group {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.65rem;
+    margin-bottom: 1.5rem;
+  }
+  .home-hero-actions-group a,
+  .home-hero-actions-group button {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+  .home-hero-kpi-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+  .home-shelter-grid,
+  .home-incident-grid,
+  .home-prep-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .home-hero-kpi-bar {
+    grid-template-columns: 1fr;
+  }
+}
+
