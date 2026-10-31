@@ -25,7 +25,8 @@ import {
   HelpCircle,
   ExternalLink,
   Flame,
-  Radio
+  Radio,
+  LocateFixed
 } from 'lucide-react';
 
 export const LiveLocationDisasterPredictor = ({ compact = false }) => {
