@@ -7,7 +7,6 @@ import { useUserLocation, calculateDistanceKm, INDIAN_CITIES } from '../../conte
 import { liveTelemetryService } from '../../services/liveTelemetryService';
 import { SeverityBadge } from '../../components/common/SeverityBadge';
 import { EmergencySlider } from '../../components/home/EmergencySlider';
-import { HomeLocationSection } from '../../components/home/HomeLocationSection';
 import { LiveLocationDisasterPredictor } from '../../components/ai/LiveLocationDisasterPredictor';
 import { 
   AlertTriangle, 
@@ -315,9 +314,20 @@ export const HomePage = () => {
               </div>
 
               {/* =========================================================================
-                  LOCATION-FIRST HERO DASHBOARD CARD (Live Location, Weather & AI Telemetry)
+                  LOCATION-FIRST HERO DASHBOARD TELEMETRY (Live Location, Weather & Telemetry)
                   ========================================================================= */}
-              <div className="home-hero-location-card">
+              <div 
+                className="home-hero-location-card"
+                style={{
+                  background: 'transparent',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  boxShadow: 'none',
+                  backdropFilter: 'none',
+                  WebkitBackdropFilter: 'none',
+                  padding: 0
+                }}
+              >
                 {/* Header: Location Status & GPS Actions */}
                 <div className="home-hero-location-header">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
@@ -618,16 +628,7 @@ export const HomePage = () => {
       </section>
 
       {/* =========================================================================
-          SECTION 3: LOCATION ACCESS / GPS STATUS
-          ========================================================================= */}
-      <section className="home-section home-section-alt" aria-label="Location Access and Status">
-        <div className="container">
-          <HomeLocationSection />
-        </div>
-      </section>
-
-      {/* =========================================================================
-          SECTION 4: CRITICAL EMERGENCY ALERTS
+          SECTION 3: CRITICAL EMERGENCY ALERTS
           ========================================================================= */}
       <section className="home-section home-section-white" aria-labelledby="critical-alerts-title">
         <div className="container">

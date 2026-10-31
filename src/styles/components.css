@@ -1979,15 +1979,16 @@
 
 /* Location-First Hero Dashboard Card & Proximities */
 .home-hero-location-card {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: var(--radius-lg);
-  padding: 1.25rem 1.4rem;
+  background: transparent !important;
+  background-color: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
   margin-top: 1.5rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35);
+  box-shadow: none !important;
 }
 
 .home-hero-location-header {
@@ -2045,7 +2046,7 @@
 
 @media (max-width: 480px) {
   .home-hero-location-card {
-    padding: 1rem;
+    padding: 0 !important;
   }
   .home-hero-telemetry-grid {
     grid-template-columns: 1fr;
