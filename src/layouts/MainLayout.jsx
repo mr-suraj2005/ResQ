@@ -10,7 +10,15 @@ export const MainLayout = () => {
   const isHomePage = location.pathname === '/';
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div 
+      className={`main-layout ${isHomePage ? 'main-layout-home' : ''}`} 
+      style={{ 
+        minHeight: '100vh', 
+        display: 'flex', 
+        flexDirection: 'column',
+        backgroundColor: isHomePage ? 'var(--color-primary-900)' : 'var(--color-bg-canvas)'
+      }}
+    >
       <SimulationBanner />
       <Navbar />
       {/* On the homepage, Critical Emergency Alerts is Section 4 in the requested homepage sequence */}

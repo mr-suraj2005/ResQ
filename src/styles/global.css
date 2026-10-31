@@ -27,6 +27,17 @@ body {
   overflow-x: hidden;
 }
 
+.main-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-canvas);
+}
+
+.main-layout-home {
+  background-color: var(--color-primary-900) !important;
+}
+
 #root {
   min-height: 100vh;
   display: flex;

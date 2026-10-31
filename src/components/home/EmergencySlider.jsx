@@ -533,3 +533,4 @@ export const EmergencySlider = ({ incidents = [] }) => {
     </div>
   );
 };
+

@@ -225,45 +225,57 @@
 }
 
 /* ==========================================================================
-   NAVBAR (PILL-SHAPED FLOATING CIVIC AUTHORITY)
+   NAVBAR (FULL-WIDTH FLAT DASHBOARD HEADER - MERGED)
    ========================================================================== */
 .main-navbar-wrapper {
   position: sticky;
-  top: 12px;
+  top: 0;
   z-index: 2000;
   width: 100%;
-  padding: 0 1rem;
-  margin-bottom: 24px;
+  background: var(--color-primary-900);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0;
+  margin: 0;
+  transition: all 0.2s ease;
 }
 
 .main-navbar {
-  max-width: 1120px;
-  margin: 12px auto;
-  border-radius: var(--radius-pill);
-  padding: 8px 20px;
-  background: rgba(10, 25, 47, 0.95);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 10px 25px -5px rgba(10, 25, 47, 0.25);
+  width: 100%;
+  max-width: var(--max-content-width);
+  margin: 0 auto;
+  border-radius: 0;
+  padding: 16px 32px;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
+  box-shadow: none;
   color: #FFFFFF;
   pointer-events: auto;
   position: relative;
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-/* Dynamic Frosted Glass Blur Upon Scrolling */
+/* Subtle Frosted Effect on Scroll */
+.main-navbar-wrapper.is-scrolled {
+  background: rgba(10, 25, 47, 0.96) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+}
+
 .main-navbar.is-scrolled {
-  background: rgba(10, 25, 47, 0.68) !important;
-  backdrop-filter: blur(24px) saturate(200%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
-  border-color: rgba(255, 255, 255, 0.24) !important;
-  box-shadow: 0 16px 40px -6px rgba(2, 6, 23, 0.55), 0 0 1px 1px rgba(255, 255, 255, 0.16) !important;
-  margin: 8px auto;
-  padding: 6px 18px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  margin: 0 auto !important;
+  padding: 14px 32px !important;
 }
 
 .navbar-inner {
+  width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
@@ -417,14 +429,14 @@
 
 @media (max-width: 960px) {
   .main-navbar-wrapper {
-    padding: 0 0.5rem;
-    top: 8px;
-    margin-bottom: 16px;
+    padding: 0;
+    top: 0;
+    margin-bottom: 0;
   }
   .main-navbar {
-    border-radius: var(--radius-pill);
-    margin: 6px auto;
-    padding: 6px 12px;
+    border-radius: 0;
+    margin: 0;
+    padding: 12px 16px;
   }
   .brand-subtitle {
     display: none;
@@ -1852,7 +1864,7 @@
 .home-redesign-wrapper {
   width: 100%;
   overflow-x: hidden;
-  background-color: #F8FAFC;
+  background-color: var(--color-primary-900);
 }
 
 .home-section {
@@ -1864,7 +1876,7 @@
 .home-section-hero {
   background: linear-gradient(135deg, #0A192F 0%, #0D2040 50%, #0F172A 100%);
   color: #FFFFFF;
-  padding: 4rem 0 4.5rem;
+  padding: 2.5rem 0 3.75rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
 }
@@ -1963,6 +1975,82 @@
   display: flex;
   align-items: center;
   gap: 0.65rem;
+}
+
+/* Location-First Hero Dashboard Card & Proximities */
+.home-hero-location-card {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.4rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35);
+}
+
+.home-hero-location-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.home-hero-telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.home-hero-telemetry-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.home-hero-proximity-pills {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 0.85rem;
+}
+
+.home-hero-proximity-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  color: #CBD5E1;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 860px) {
+  .home-hero-telemetry-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .home-hero-location-card {
+    padding: 1rem;
+  }
+  .home-hero-telemetry-grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
 }
 
 /* Section Grids */

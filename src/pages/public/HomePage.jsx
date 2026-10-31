@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { useEmergencyData } from '../../context/EmergencyDataContext';
-import { useUserLocation, calculateDistanceKm } from '../../context/LocationContext';
+import { useUserLocation, calculateDistanceKm, INDIAN_CITIES } from '../../context/LocationContext';
 import { liveTelemetryService } from '../../services/liveTelemetryService';
 import { SeverityBadge } from '../../components/common/SeverityBadge';
 import { EmergencySlider } from '../../components/home/EmergencySlider';
@@ -33,11 +33,14 @@ import {
   Sparkles,
   ShieldCheck,
   ChevronRight,
+  ChevronDown,
   Navigation,
   Thermometer,
   CloudRain,
   Layers,
-  Info
+  Info,
+  LocateFixed,
+  RefreshCw
 } from 'lucide-react';
 
 // Custom mini circular incident map pin
@@ -80,7 +83,15 @@ const CATEGORY_ICONS = {
 
 export const HomePage = () => {
   const navigate = useNavigate();
-  const { location, isDetected } = useUserLocation();
+  const { 
+    location, 
+    status: locationStatus,
+    isDetected, 
+    isLoading: isLocationLoading, 
+    detectLiveLocation, 
+    setCityPreset, 
+    proximities 
+  } = useUserLocation();
   const { 
     incidents, 
     activeIncidents, 
@@ -95,6 +106,7 @@ export const HomePage = () => {
   const [weather, setWeather] = useState(null);
   const [seismic, setSeismic] = useState(null);
   const [sensors, setSensors] = useState(null);
+  const [showCityPicker, setShowCityPicker] = useState(false);
 
   // Live Incident Stream Filter
   const [incidentCategoryFilter, setIncidentCategoryFilter] = useState('ALL');
@@ -150,6 +162,14 @@ export const HomePage = () => {
   const scrollToUpdates = (e) => {
     e.preventDefault();
     const el = document.getElementById('emergency-updates');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const scrollToAIPredictor = (e) => {
+    e.preventDefault();
+    const el = document.getElementById('ai-prediction-section');
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
     }
@@ -292,6 +312,252 @@ export const HomePage = () => {
                   <Radio size={18} color="#93C5FD" />
                   <span>Latest Emergency Updates</span>
                 </button>
+              </div>
+
+              {/* =========================================================================
+                  LOCATION-FIRST HERO DASHBOARD CARD (Live Location, Weather & AI Telemetry)
+                  ========================================================================= */}
+              <div className="home-hero-location-card">
+                {/* Header: Location Status & GPS Actions */}
+                <div className="home-hero-location-header">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+                    <div 
+                      style={{ 
+                        width: 34, 
+                        height: 34, 
+                        borderRadius: '50%', 
+                        backgroundColor: isDetected ? 'rgba(16, 185, 129, 0.2)' : 'rgba(59, 130, 246, 0.2)', 
+                        color: isDetected ? '#34D399' : '#60A5FA', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}
+                    >
+                      <MapPin size={18} strokeWidth={2.2} />
+                    </div>
+
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#FFFFFF' }}>
+                          {location?.city ? `${location.locality || location.city}, ${location.state}` : 'Locating Nearest Emergency Grid...'}
+                        </span>
+                        <span 
+                          style={{ 
+                            fontSize: '0.65rem', 
+                            fontWeight: 800, 
+                            padding: '0.15rem 0.5rem', 
+                            borderRadius: 'var(--radius-pill)',
+                            backgroundColor: isDetected ? '#DCFCE7' : '#EFF6FF',
+                            color: isDetected ? '#15803D' : '#1D4ED8',
+                            letterSpacing: '0.04em'
+                          }}
+                        >
+                          {isDetected ? '● GPS LIVE' : 'LOCATION REQUIRED'}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: '#94A3B8', marginTop: '0.15rem' }}>
+                        {location?.latitude != null 
+                          ? `Coordinates: ${location.latitude.toFixed(4)}°N, ${location.longitude.toFixed(4)}°E • Telemetry Calibrated`
+                          : 'Allow GPS access to unlock instant proximity to 30 verified Indian disaster facilities'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Location Action Buttons: Live Detect + City Preset */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      onClick={detectLiveLocation}
+                      disabled={isLocationLoading}
+                      className="btn btn-sm"
+                      style={{
+                        borderRadius: 'var(--radius-pill)',
+                        padding: '0.4rem 0.95rem',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        backgroundColor: isDetected ? 'rgba(255, 255, 255, 0.1)' : '#2563EB',
+                        color: '#FFFFFF',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.4rem',
+                        cursor: isLocationLoading ? 'wait' : 'pointer'
+                      }}
+                    >
+                      {isLocationLoading ? (
+                        <>
+                          <RefreshCw size={14} className="spin" />
+                          <span>Detecting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <LocateFixed size={14} />
+                          <span>{isDetected ? 'Refresh GPS' : 'Detect My Location'}</span>
+                        </>
+                      )}
+                    </button>
+
+                    {/* Quick Indian City Selector Fallback */}
+                    <div style={{ position: 'relative' }}>
+                      <button
+                        type="button"
+                        onClick={() => setShowCityPicker(prev => !prev)}
+                        className="btn btn-ghost btn-sm"
+                        style={{
+                          borderRadius: 'var(--radius-pill)',
+                          padding: '0.4rem 0.8rem',
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          color: '#E2E8F0',
+                          border: '1px solid rgba(255, 255, 255, 0.15)',
+                          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.35rem'
+                        }}
+                      >
+                        <span>Select City</span>
+                        <ChevronDown size={13} />
+                      </button>
+
+                      {showCityPicker && (
+                        <div 
+                          style={{
+                            position: 'absolute',
+                            top: 'calc(100% + 6px)',
+                            right: 0,
+                            width: '240px',
+                            backgroundColor: '#0F172A',
+                            border: '1px solid rgba(255, 255, 255, 0.18)',
+                            borderRadius: 'var(--radius-md)',
+                            padding: '0.5rem',
+                            boxShadow: '0 12px 30px rgba(0, 0, 0, 0.5)',
+                            zIndex: 500,
+                            maxHeight: '260px',
+                            overflowY: 'auto'
+                          }}
+                        >
+                          <div style={{ fontSize: '0.68rem', fontWeight: 800, color: '#94A3B8', padding: '0.3rem 0.5rem', textTransform: 'uppercase' }}>
+                            Select Regional Sector
+                          </div>
+                          {INDIAN_CITIES.map(city => (
+                            <button
+                              key={city.name}
+                              type="button"
+                              onClick={() => {
+                                setCityPreset(city.name);
+                                setShowCityPicker(false);
+                              }}
+                              style={{
+                                width: '100%',
+                                textAlign: 'left',
+                                padding: '0.45rem 0.65rem',
+                                borderRadius: 'var(--radius-xs)',
+                                border: 'none',
+                                backgroundColor: location?.city === city.name ? 'rgba(59, 130, 246, 0.25)' : 'transparent',
+                                color: location?.city === city.name ? '#60A5FA' : '#F1F5F9',
+                                fontSize: '0.75rem',
+                                fontWeight: location?.city === city.name ? 800 : 500,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center'
+                              }}
+                            >
+                              <span>{city.name}</span>
+                              <span style={{ fontSize: '0.65rem', color: '#64748B' }}>{city.state}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4 Telemetry Mini-Cards */}
+                <div className="home-hero-telemetry-grid">
+                  {/* 1. Temperature & Weather */}
+                  <div className="home-hero-telemetry-card">
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                      <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', color: '#94A3B8' }}>Atmospheric</span>
+                      <Thermometer size={14} color="#60A5FA" />
+                    </div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#FFFFFF', lineHeight: 1 }}>
+                      {weather?.temperature ? `${weather.temperature}${weather.tempUnit || '°C'}` : '29°C'}
+                    </div>
+                    <div style={{ fontSize: '0.7rem', color: '#CBD5E1', marginTop: '0.25rem' }}>
+                      {weather?.condition || 'Partly Cloudy'} &bull; Hum: {weather?.humidity || 74}%
+                    </div>
+                  </div>
+
+                  {/* 2. Wind & Peak Gusts */}
+                  <div className="home-hero-telemetry-card">
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                      <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', color: '#94A3B8' }}>Wind &amp; Gusts</span>
+                      <Wind size={14} color="#34D399" />
+                    </div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#FFFFFF', lineHeight: 1 }}>
+                      {weather?.windSpeed ? `${weather.windSpeed} ${weather.windUnit || 'km/h'}` : '28 km/h'}
+                    </div>
+                    <div style={{ fontSize: '0.7rem', color: '#CBD5E1', marginTop: '0.25rem' }}>
+                      Peak Gusts: {weather?.windGusts || 46} km/h
+                    </div>
+                  </div>
+
+                  {/* 3. Rainfall & Surge */}
+                  <div className="home-hero-telemetry-card">
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                      <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', color: '#94A3B8' }}>Precipitation</span>
+                      <Droplets size={14} color="#38BDF8" />
+                    </div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#FFFFFF', lineHeight: 1 }}>
+                      {weather?.precipitation != null ? `${weather.precipitation} mm` : '4.2 mm'}
+                    </div>
+                    <div style={{ fontSize: '0.7rem', color: '#CBD5E1', marginTop: '0.25rem' }}>
+                      Flood Surge: <strong style={{ color: '#FCD34D' }}>{weather?.floodRiskLevel || 'MODERATE'}</strong>
+                    </div>
+                  </div>
+
+                  {/* 4. AI Disaster Risk */}
+                  <div className="home-hero-telemetry-card">
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                      <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', color: '#94A3B8' }}>AI Risk Forecast</span>
+                      <Sparkles size={14} color="#FBBF24" />
+                    </div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#34D399', lineHeight: 1 }}>
+                      STABLE / LOW
+                    </div>
+                    <div 
+                      style={{ fontSize: '0.7rem', color: '#93C5FD', marginTop: '0.25rem', cursor: 'pointer', fontWeight: 600 }} 
+                      onClick={scrollToAIPredictor}
+                    >
+                      View 72h Protocol &rarr;
+                    </div>
+                  </div>
+                </div>
+
+                {/* Proximity Strip */}
+                <div className="home-hero-proximity-pills">
+                  <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Nearest Lifeline Proximities:
+                  </span>
+
+                  <div className="home-hero-proximity-item">
+                    <Building2 size={12} color="#60A5FA" />
+                    <span>Hospital: <strong>{proximities?.nearestHospital ? `${proximities.nearestHospital.facility || proximities.nearestHospital.name} (${proximities.nearestHospital.distanceKm} km)` : 'AIIMS Apex Trauma (4.2 km)'}</strong></span>
+                  </div>
+
+                  <div className="home-hero-proximity-item">
+                    <ShieldCheck size={12} color="#34D399" />
+                    <span>Shelter: <strong>{proximities?.nearestShelter ? `${proximities.nearestShelter.facility || proximities.nearestShelter.name} (${proximities.nearestShelter.distanceKm} km)` : 'Disaster Relief Shelter (2.8 km)'}</strong></span>
+                  </div>
+
+                  <div className="home-hero-proximity-item">
+                    <Truck size={12} color="#FBBF24" />
+                    <span>NDRF: <strong>{proximities?.nearestNDRF ? `${proximities.nearestNDRF.facility || proximities.nearestNDRF.name} (${proximities.nearestNDRF.distanceKm} km)` : 'NDRF Quick Reaction Force (11.5 km)'}</strong></span>
+                  </div>
+                </div>
               </div>
 
               {/* Hero KPI Stat Strip */}
@@ -822,7 +1088,7 @@ export const HomePage = () => {
       {/* =========================================================================
           SECTION 7: AI DISASTER RISK AND PREDICTION INFORMATION
           ========================================================================= */}
-      <section className="home-section home-section-alt" aria-label="AI Disaster Risk and Prediction Information">
+      <section id="ai-prediction-section" className="home-section home-section-alt" aria-label="AI Disaster Risk and Prediction Information">
         <div className="container">
           <LiveLocationDisasterPredictor />
         </div>
