@@ -656,7 +656,10 @@ export const HomePage = () => {
           </div>
 
           {criticalAlerts.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div 
+              className="home-crisis-alerts-container"
+              style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', alignItems: 'flex-start', width: '100%' }}
+            >
               {criticalAlerts.slice(0, 2).map((alert) => {
                 const zones = Array.isArray(alert.affectedZones) 
                   ? alert.affectedZones 
@@ -667,79 +670,89 @@ export const HomePage = () => {
                 return (
                   <div 
                     key={alert.id}
-                    className="card"
+                    className="card home-crisis-alert-card"
                     style={{
+                      width: '100%',
+                      height: 'fit-content',
+                      minHeight: 'auto',
                       borderRadius: 'var(--radius-lg)',
                       border: '1.5px solid #FCA5A5',
                       backgroundColor: '#FEF2F2',
-                      padding: '1.25rem 1.5rem',
+                      padding: '24px',
                       display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      flexWrap: 'wrap',
-                      gap: '1rem',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
                       boxShadow: '0 4px 12px rgba(220, 38, 38, 0.08)'
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.85rem', flex: '1 1 300px' }}>
+                    {/* Header Row: Badge & Category */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.65rem', flexWrap: 'wrap' }}>
                       <div 
                         style={{ 
-                          width: 42, 
-                          height: 42, 
+                          width: 32, 
+                          height: 32, 
                           borderRadius: '50%', 
                           backgroundColor: '#FEE2E2', 
                           color: '#DC2626', 
-                          display: 'flex', 
+                          display: 'inline-flex', 
                           alignItems: 'center', 
                           justifyContent: 'center',
                           flexShrink: 0
                         }}
                       >
-                        <AlertCircle size={22} strokeWidth={2.4} />
+                        <AlertCircle size={18} strokeWidth={2.4} />
                       </div>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
-                          <span 
-                            style={{ 
-                              backgroundColor: '#DC2626', 
-                              color: '#FFFFFF', 
-                              fontSize: '0.68rem', 
-                              fontWeight: 800, 
-                              padding: '0.15rem 0.55rem', 
-                              borderRadius: 'var(--radius-pill)',
-                              letterSpacing: '0.04em'
-                            }}
-                          >
-                            CRITICAL RED ALERT
-                          </span>
-                          <span style={{ fontSize: '0.72rem', color: '#991B1B', fontWeight: 600 }}>
-                            {alert.category || 'WEATHER DIRECTIVE'}
-                          </span>
-                        </div>
-                        <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#7F1D1D', marginBottom: '0.25rem', lineHeight: 1.3 }}>
-                          {alert.title}
-                        </h3>
-                        {alert.description && (
-                          <p style={{ fontSize: 'var(--text-xs)', color: '#991B1B', lineHeight: 1.5, margin: 0 }}>
-                            {alert.description}
-                          </p>
-                        )}
-                        {zones.length > 0 && (
-                          <div style={{ fontSize: '0.72rem', color: '#B91C1C', marginTop: '0.4rem', fontWeight: 600 }}>
-                            Affected Regions: {zones.join(', ')}
-                          </div>
-                        )}
-                      </div>
+                      <span 
+                        style={{ 
+                          backgroundColor: '#DC2626', 
+                          color: '#FFFFFF', 
+                          fontSize: '0.68rem', 
+                          fontWeight: 800, 
+                          padding: '0.2rem 0.65rem', 
+                          borderRadius: 'var(--radius-pill)',
+                          letterSpacing: '0.04em'
+                        }}
+                      >
+                        CRITICAL RED ALERT
+                      </span>
+                      <span style={{ fontSize: '0.72rem', color: '#991B1B', fontWeight: 700, textTransform: 'uppercase' }}>
+                        {alert.category || 'WEATHER DIRECTIVE'}
+                      </span>
                     </div>
 
+                    {/* Alert Title */}
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#7F1D1D', marginBottom: '0.35rem', lineHeight: 1.35 }}>
+                      {alert.title}
+                    </h3>
+
+                    {/* Alert Description */}
+                    {alert.description && (
+                      <p style={{ fontSize: 'var(--text-xs)', color: '#991B1B', lineHeight: 1.55, margin: 0, maxWidth: '850px' }}>
+                        {alert.description}
+                      </p>
+                    )}
+
+                    {/* Affected Regions */}
+                    {zones.length > 0 && (
+                      <div style={{ fontSize: '0.75rem', color: '#B91C1C', marginTop: '0.45rem', fontWeight: 600 }}>
+                        <strong>Affected Regions:</strong> {zones.join(', ')}
+                      </div>
+                    )}
+
+                    {/* View Directives Button: Flows naturally right beneath the alert text with simple margin-top: 16px */}
                     <Link 
                       to="/alerts" 
-                      className="btn btn-emergency btn-sm"
+                      className="btn btn-emergency btn-sm alert-directives-btn"
                       style={{ 
+                        marginTop: '16px',
                         borderRadius: 'var(--radius-pill)', 
-                        padding: '0.5rem 1.25rem', 
+                        padding: '0.5rem 1.35rem', 
                         fontWeight: 700,
-                        whiteSpace: 'nowrap'
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.4rem',
+                        alignSelf: 'flex-start',
+                        boxShadow: '0 2px 8px rgba(220, 38, 38, 0.25)'
                       }}
                     >
                       <span>View Directives</span>
@@ -751,37 +764,52 @@ export const HomePage = () => {
             </div>
           ) : (
             <div 
-              className="card"
+              className="card home-crisis-alert-card"
               style={{
+                width: '100%',
+                height: 'fit-content',
+                minHeight: 'auto',
                 borderRadius: 'var(--radius-lg)',
                 border: '1px solid #DCFCE7',
                 backgroundColor: '#F0FDF4',
-                padding: '1.25rem 1.5rem',
+                padding: '24px',
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: '1rem'
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.06)'
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-                <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#DCFCE7', color: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <ShieldCheck size={24} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                <div style={{ width: 34, height: 34, borderRadius: '50%', backgroundColor: '#DCFCE7', color: '#16A34A', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <ShieldCheck size={20} />
                 </div>
                 <div>
-                  <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#166534', margin: 0 }}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#166534', margin: 0 }}>
                     0 Active Red Alerts in Region
                   </h3>
-                  <p style={{ fontSize: 'var(--text-xs)', color: '#15803D', margin: '0.15rem 0 0' }}>
-                    Regional meteorological radar and seismic networks are operational. All civil sectors operating under baseline surveillance.
-                  </p>
                 </div>
               </div>
 
+              <p style={{ fontSize: 'var(--text-xs)', color: '#15803D', margin: 0, lineHeight: 1.55 }}>
+                Regional meteorological radar and seismic networks are operational. All civil sectors operating under baseline surveillance.
+              </p>
+
               <Link 
                 to="/alerts" 
-                className="btn btn-outline btn-sm"
-                style={{ borderRadius: 'var(--radius-pill)', padding: '0.4rem 1rem', fontSize: '0.75rem', borderColor: '#86EFAC', color: '#166534' }}
+                className="btn btn-outline btn-sm alert-directives-btn"
+                style={{ 
+                  marginTop: '16px',
+                  borderRadius: 'var(--radius-pill)', 
+                  padding: '0.45rem 1.25rem', 
+                  fontSize: '0.75rem', 
+                  fontWeight: 700,
+                  borderColor: '#86EFAC', 
+                  color: '#166534',
+                  alignSelf: 'flex-start',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem'
+                }}
               >
                 <span>Browse Regional Advisories</span>
                 <ChevronRight size={14} />

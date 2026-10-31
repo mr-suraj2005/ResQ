@@ -2132,3 +2132,44 @@
   }
 }
 
+
+
+/* ==========================================================================
+   HOMEPAGE ACTIVE CRISIS DIRECTIVES ALERT CARD (NATURAL CONTENT-WRAP)
+   ========================================================================== */
+.home-crisis-alerts-container {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.25rem !important;
+  align-items: flex-start !important;
+  width: 100% !important;
+}
+
+.home-crisis-alert-card {
+  width: 100% !important;
+  height: fit-content !important;
+  min-height: auto !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+  border-radius: var(--radius-lg) !important;
+  border: 1.5px solid #FCA5A5 !important;
+  background-color: #FEF2F2 !important;
+  padding: 24px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.08) !important;
+}
+
+.home-crisis-alert-card .alert-directives-btn {
+  margin-top: 16px !important;
+  margin-bottom: 0 !important;
+  border-radius: var(--radius-pill) !important;
+  padding: 0.5rem 1.35rem !important;
+  font-weight: 700 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+  align-self: flex-start !important;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25) !important;
+}
