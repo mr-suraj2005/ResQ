@@ -2,16 +2,70 @@ import { createClient } from '@supabase/supabase-js';
 import { initialShelters } from '../data/shelters';
 import { initialResponseResources } from '../data/tacticalLayers';
 
-// Default configuration with safe fallback to user-provided credentials
-const SUPABASE_URL = (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_SUPABASE_URL) || 'https://vgwpwhgltnrjzfclmzlw.supabase.co';
-const SUPABASE_ANON_KEY = (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_SUPABASE_ANON_KEY) || 'sb_publishable_R2WCM18W43X1eVZ7wzbl8A_F0sphTkf';
+// Default configuration — always falls back to the known ResQ project credentials
+// so the app never crashes even if .env variables are missing or malformed.
+const SUPABASE_URL =
+  (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_SUPABASE_URL) ||
+  'https://vgwpwhgltnrjzfclmzlw.supabase.co';
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true
+const SUPABASE_ANON_KEY =
+  (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_SUPABASE_ANON_KEY) ||
+  'sb_publishable_R2WCM18W43X1eVZ7wzbl8A_F0sphTkf';
+
+// Guard: validate URL format before passing to createClient so an empty/invalid
+// env variable never throws a synchronous error that crashes React at module load.
+function isValidUrl(str) {
+  try {
+    const u = new URL(str);
+    return u.protocol === 'https:' || u.protocol === 'http:';
+  } catch {
+    return false;
   }
-});
+}
+
+const safeUrl = isValidUrl(SUPABASE_URL)
+  ? SUPABASE_URL
+  : 'https://vgwpwhgltnrjzfclmzlw.supabase.co';
+
+const safeKey = typeof SUPABASE_ANON_KEY === 'string' && SUPABASE_ANON_KEY.length > 10
+  ? SUPABASE_ANON_KEY
+  : 'sb_publishable_R2WCM18W43X1eVZ7wzbl8A_F0sphTkf';
+
+let supabaseInstance;
+try {
+  supabaseInstance = createClient(safeUrl, safeKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true
+    }
+  });
+} catch (err) {
+  console.error('[ResQ] Supabase createClient failed — using offline mock client:', err.message);
+  // Minimal no-op mock so code that calls supabase.from(...) never throws.
+  supabaseInstance = {
+    from: () => ({
+      select: () => Promise.resolve({ data: [], error: null }),
+      insert: () => Promise.resolve({ data: null, error: null }),
+      update: () => Promise.resolve({ data: null, error: null }),
+      eq: function() { return this; },
+      order: function() { return this; },
+      limit: function() { return this; },
+      single: () => Promise.resolve({ data: null, error: null })
+    }),
+    auth: {
+      signInWithOtp: () => Promise.resolve({ data: null, error: { message: 'Offline mode' } }),
+      verifyOtp: () => Promise.resolve({ data: null, error: { message: 'Offline mode' } }),
+      signOut: () => Promise.resolve({ error: null }),
+      getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } })
+    },
+    functions: {
+      invoke: () => Promise.resolve({ data: null, error: { message: 'Edge functions unavailable in offline mode' } })
+    }
+  };
+}
+
+export const supabase = supabaseInstance;
 
 export const supabaseConfig = {
   url: SUPABASE_URL,

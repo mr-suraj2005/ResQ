@@ -3,17 +3,26 @@
  * Powered by Gemini 2.5 Flash with Deterministic Rule-Based Fallback
  */
 
-const GEMINI_API_KEY = (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_GEMINI_API_KEY) || '';
+// Safely read Gemini API key — never throws if import.meta.env is unavailable.
+let GEMINI_API_KEY = '';
+try {
+  GEMINI_API_KEY =
+    (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_GEMINI_API_KEY) || '';
+} catch {
+  GEMINI_API_KEY = '';
+}
 
 /**
  * Predicts upcoming disasters over the next 72 hours and generates
  * dual Citizen and EOC Authority management protocols.
+ * Always returns a valid prediction object — never throws.
  */
 export async function predictDisasterRisks({
   location,
   weather,
   proximities
 }) {
+  try {
   const {
     city = 'New Delhi',
     district = 'New Delhi',
@@ -80,6 +89,40 @@ export async function predictDisasterRisks({
 
   // Instantaneous Deterministic Rule-Based Engine Fallback
   return generateDeterministicPrediction(contextPayload, nearestHospital, nearestShelter, nearestNDRF);
+  } catch (fatalErr) {
+    // Last-resort safety net: return a benign prediction instead of crashing React
+    console.error('[ResQ] predictDisasterRisks fatal error — returning safe fallback:', fatalErr.message);
+    return {
+      overallRiskLevel: 'LOW',
+      riskScore: 15,
+      summaryHeadline: 'Disaster risk assessment temporarily unavailable. Please try again.',
+      predictedDisasters: [{
+        hazardType: 'Assessment Unavailable',
+        probabilityPercent: 0,
+        timeframe: 'N/A',
+        severity: 'LOW',
+        triggerFactor: 'Risk engine encountered an internal error. Using baseline safe assessment.'
+      }],
+      citizenManagementPlan: [
+        'Keep emergency contact numbers (112, 1078) readily accessible.',
+        'Maintain a 72-hour emergency supply kit at home.',
+        'Stay tuned to local official disaster alerts and advisories.'
+      ],
+      authorityResourcePlan: [
+        'Maintain standard operational readiness across all NDRF battalions.',
+        'Verify shelter network capacity and supply inventories.',
+        'Ensure trauma centres maintain disaster-ready protocols.'
+      ],
+      safeEvacuationTarget: {
+        name: 'Nearest Verified Shelter',
+        id: 'IND-SHL-001',
+        distanceKm: null,
+        helpline: '112 / 1078'
+      },
+      engineSource: 'ResQ Safe Fallback (Error Recovery)',
+      analyzedAt: new Date().toISOString()
+    };
+  }
 }
 
 /**
