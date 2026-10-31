@@ -6,7 +6,6 @@ import {
   Phone, 
   ArrowRight, 
   ShieldCheck, 
-  Sparkles, 
   CheckCircle2, 
   AlertCircle, 
   RefreshCw, 

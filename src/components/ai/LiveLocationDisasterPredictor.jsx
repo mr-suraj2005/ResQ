@@ -6,7 +6,7 @@ import { predictDisasterRisks } from '../../services/aiDisasterPredictor';
 import { 
   MapPin, 
   Compass, 
-  Sparkles, 
+  Radar, 
   RefreshCw, 
   AlertTriangle, 
   ShieldCheck, 
@@ -146,14 +146,14 @@ export const LiveLocationDisasterPredictor = ({ compact = false }) => {
           boxShadow: 'var(--shadow-sm)',
           marginBottom: '2.5rem'
         }}
-        aria-label="AI Disaster Prediction Pending Location"
+        aria-label="Automated Threat Assessment Pending Location"
       >
         <div style={{ maxWidth: '520px', margin: '0 auto' }}>
           <div style={{ width: 48, height: 48, borderRadius: '50%', backgroundColor: 'var(--color-primary-50)', color: 'var(--color-primary-600)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.85rem' }}>
-            <Sparkles size={24} />
+            <Radar size={24} />
           </div>
           <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 800, color: 'var(--color-neutral-900)' }}>
-            AI Real-Time Telemetry &amp; Predictive Disaster Engine
+            Automated Threat Assessment &amp; System Telemetry
           </h3>
           <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-neutral-600)', marginTop: '0.4rem', lineHeight: 1.55 }}>
             Enable your location at the top of the homepage to activate real-time Open-Meteo multi-day weather forecasts, seismic vulnerability assessment, and emergency management protocols tailored to your coordinates.
@@ -280,8 +280,8 @@ export const LiveLocationDisasterPredictor = ({ compact = false }) => {
               gap: '0.35rem'
             }}
           >
-            <Sparkles size={13} className={isPredicting ? 'spin' : ''} />
-            <span>{isPredicting ? 'Analyzing...' : 'Re-Run AI Engine'}</span>
+            <Activity size={13} className={isPredicting ? 'spin' : ''} />
+            <span>{isPredicting ? 'Assessing...' : 'Re-Calculate Threat Index'}</span>
           </button>
         </div>
       </div>
@@ -429,9 +429,9 @@ export const LiveLocationDisasterPredictor = ({ compact = false }) => {
             {/* Header with Risk Pill */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <Sparkles size={16} color={riskColor} />
+                <Radar size={16} color={riskColor} />
                 <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: riskColor }}>
-                  AI Hazard Radar (72-Hr)
+                  Automated Hazard Radar (72-Hr)
                 </span>
               </div>
 

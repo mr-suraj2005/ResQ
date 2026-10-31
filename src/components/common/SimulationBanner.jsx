@@ -36,7 +36,7 @@ export const SimulationBanner = () => {
       <div className="simulation-notice">
         <span className="notice-pill">NOTICE</span>
         <ShieldAlert size={14} style={{ display: 'inline', verticalAlign: '-2px' }} />
-        <span>SIMULATION PROTOTYPE — FOR EDUCATIONAL DEMONSTRATION ONLY.</span>
+        <span>EXERCISE ENVIRONMENT &bull; OFFICIAL DISASTER RESPONSE SIMULATION</span>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

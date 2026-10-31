@@ -3,7 +3,7 @@ import { FileQuestion } from 'lucide-react';
 
 export const EmptyState = ({ 
   icon: Icon = FileQuestion, 
-  title = "No records found", 
+  title = "0 Records Found", 
   description = "No items match your active filters or query. Try adjusting your search criteria.",
   action
 }) => {

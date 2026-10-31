@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useEmergencyData } from '../../context/EmergencyDataContext';
 import { 
-  Sparkles, 
+  Activity, 
   Cpu, 
   AlertTriangle, 
   RefreshCw, 
@@ -152,12 +152,12 @@ export const AIAnalysisPanel = ({ compact = false, className = '' }) => {
               color: '#93C5FD'
             }}
           >
-            <Sparkles size={18} />
+            <Activity size={18} />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <span style={{ fontWeight: 800, fontSize: 'var(--text-base)', letterSpacing: '-0.01em' }}>
-                ResQ Situation AI Engine
+                Automated Threat Assessment
               </span>
               <span 
                 style={{ 
@@ -170,7 +170,7 @@ export const AIAnalysisPanel = ({ compact = false, className = '' }) => {
                   textTransform: 'uppercase'
                 }}
               >
-                v2.4 Live
+                System Telemetry
               </span>
             </div>
             <div style={{ fontSize: '0.72rem', color: '#CBD5E1', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
@@ -233,7 +233,7 @@ export const AIAnalysisPanel = ({ compact = false, className = '' }) => {
               {analysis.score}<span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: '#64748B' }}>/100</span>
             </div>
             <div style={{ fontSize: '0.7rem', color: '#475569', fontWeight: 500 }}>
-              AI Risk Index
+              Automated Risk Index
             </div>
           </div>
         </div>
@@ -304,7 +304,7 @@ export const AIAnalysisPanel = ({ compact = false, className = '' }) => {
         <div>
           <div style={{ fontSize: 'var(--text-xs)', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-neutral-500)', letterSpacing: '0.04em', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
             <Cpu size={13} color="var(--color-primary-600)" />
-            <span>Algorithmic Recommendations</span>
+            <span>Tactical Resource Directives</span>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>

@@ -25,19 +25,18 @@ import {
 } from 'lucide-react';
 
 const CATEGORY_CARDS = [
-  { id: 'FLOOD', label: 'Flood / Surge', icon: Droplets, color: '#1D4ED8', bg: '#DBEAFE' },
-  { id: 'FIRE', label: 'Fire / Smoke', icon: Flame, color: '#DC2626', bg: '#FEE2E2' },
-  { id: 'COLLAPSE', label: 'Collapse / Landslide', icon: Building2, color: '#D97706', bg: '#FEF3C7' },
-  { id: 'MEDICAL', label: 'Medical Trauma', icon: HeartPulse, color: '#15803D', bg: '#DCFCE7' },
-  { id: 'ROAD_BLOCK', label: 'Road Blocked', icon: Construction, color: '#475569', bg: '#E2E8F0' },
-  { id: 'POWER', label: 'Power / Hazard', icon: Zap, color: '#7C3AED', bg: '#EDE9FE' }
+  { id: 'FIRE', label: 'Fire / Smoke', icon: Flame, color: '#DC2626', bg: '#FEE2E2', border: '#F87171' },
+  { id: 'FLOOD', label: 'Flood / Surge', icon: Droplets, color: '#1D4ED8', bg: '#DBEAFE', border: '#93C5FD' },
+  { id: 'MEDICAL', label: 'Medical Trauma', icon: HeartPulse, color: '#15803D', bg: '#DCFCE7', border: '#86EFAC' },
+  { id: 'COLLAPSE', label: 'Collapse / Landslide', icon: Building2, color: '#D97706', bg: '#FEF3C7', border: '#FCD34D' },
+  { id: 'ROAD_BLOCK', label: 'Road Blocked', icon: Construction, color: '#475569', bg: '#E2E8F0', border: '#CBD5E1' },
+  { id: 'POWER', label: 'Hazard / Power', icon: Zap, color: '#7C3AED', bg: '#EDE9FE', border: '#DDD6FE' }
 ];
 
 const PEOPLE_OPTIONS = [
-  { label: '1–5', value: 3, desc: 'Individual / Household' },
-  { label: '5–20', value: 12, desc: 'Small Group' },
-  { label: '20–50', value: 35, desc: 'Significant Crowd' },
-  { label: '50+ Mass Casualty', value: 65, desc: 'Critical Scale' }
+  { label: '1–5 People', value: 3, desc: 'Individual / Small Group' },
+  { label: '5–20 People', value: 12, desc: 'Multiple Families' },
+  { label: '50+ People', value: 65, desc: 'Mass Casualty Scale' }
 ];
 
 export const ReportEmergencyPage = () => {
@@ -46,7 +45,7 @@ export const ReportEmergencyPage = () => {
   const navigate = useNavigate();
 
   // Step 1: WHAT
-  const [selectedCategory, setSelectedCategory] = useState('FLOOD');
+  const [selectedCategory, setSelectedCategory] = useState('FIRE');
   const [severity, setSeverity] = useState('CRITICAL'); // 'CRITICAL' | 'HIGH'
 
   // Step 2: WHERE
@@ -171,10 +170,10 @@ export const ReportEmergencyPage = () => {
       >
         <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
           <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 900, color: 'var(--color-neutral-900)', letterSpacing: '-0.02em' }}>
-            Instant Citizen Emergency Report
+            Emergency Dispatch Report
           </h1>
           <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-neutral-500)', marginTop: '0.2rem' }}>
-            3 rapid steps &bull; Dispatches priority alert to Unified EOC &amp; local units
+            Immediate priority transmission to Unified Emergency Operations Center &amp; tactical units
           </p>
         </div>
 
@@ -327,7 +326,7 @@ export const ReportEmergencyPage = () => {
             Step 3: How Many People in Immediate Danger?
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.65rem' }}>
             {PEOPLE_OPTIONS.map((opt) => {
               const isSelected = peopleCount === opt.value;
               return (
@@ -336,20 +335,27 @@ export const ReportEmergencyPage = () => {
                   type="button"
                   onClick={() => setPeopleCount(opt.value)}
                   style={{
-                    padding: '0.6rem 0.35rem',
+                    padding: '0.75rem 0.5rem',
                     borderRadius: 'var(--radius-pill)',
                     border: isSelected ? '2px solid var(--color-primary-600)' : '1px solid var(--color-border)',
-                    backgroundColor: isSelected ? '#EFF6FF' : '#FFFFFF',
-                    color: isSelected ? 'var(--color-primary-700)' : 'var(--color-neutral-700)',
-                    fontWeight: 700,
-                    fontSize: '0.72rem',
+                    backgroundColor: isSelected ? 'var(--color-primary-900)' : '#FFFFFF',
+                    color: isSelected ? '#FFFFFF' : 'var(--color-neutral-800)',
+                    fontWeight: 800,
+                    fontSize: '0.82rem',
                     cursor: 'pointer',
                     textAlign: 'center',
-                    boxShadow: isSelected ? '0 2px 6px rgba(29, 78, 216, 0.15)' : 'none',
-                    transition: 'all 0.15s ease'
+                    boxShadow: isSelected ? '0 4px 12px rgba(15, 23, 42, 0.25)' : 'none',
+                    transition: 'all 0.15s ease',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '0.15rem'
                   }}
                 >
-                  {opt.label}
+                  <span>{opt.label}</span>
+                  <span style={{ fontSize: '0.65rem', fontWeight: 600, color: isSelected ? '#93C5FD' : 'var(--color-neutral-500)' }}>
+                    {opt.desc}
+                  </span>
                 </button>
               );
             })}
@@ -474,11 +480,11 @@ export const ReportEmergencyPage = () => {
           }}
         >
           {isSubmitting ? (
-            <span>Transmitting SOS Alert...</span>
+            <span>Broadcasting Emergency Alert...</span>
           ) : (
             <>
               <AlertTriangle size={20} strokeWidth={2.4} />
-              <span>Transmit Emergency SOS</span>
+              <span>Broadcast Emergency Alert</span>
             </>
           )}
         </button>

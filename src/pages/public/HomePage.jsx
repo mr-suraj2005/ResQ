@@ -30,7 +30,7 @@ import {
   Users,
   CheckCircle2,
   ExternalLink,
-  Sparkles,
+  Radar,
   ShieldCheck,
   ChevronRight,
   ChevronDown,
@@ -243,7 +243,7 @@ export const HomePage = () => {
                   margin: 0
                 }}
               >
-                Monitor emergencies, discover nearby shelters, receive localized disaster alerts, and coordinate emergency response through one unified platform.
+                National disaster monitoring network. Real-time telemetry, verified shelter routing, and rapid emergency dispatch.
               </p>
 
               {/* Three Action Buttons */}
@@ -522,8 +522,8 @@ export const HomePage = () => {
                   {/* 4. AI Disaster Risk */}
                   <div className="home-hero-telemetry-card">
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-                      <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', color: '#94A3B8' }}>AI Risk Forecast</span>
-                      <Sparkles size={14} color="#FBBF24" />
+                      <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', color: '#94A3B8' }}>Automated Threat Index</span>
+                      <Radar size={14} color="#FBBF24" />
                     </div>
                     <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#34D399', lineHeight: 1 }}>
                       STABLE / LOW
@@ -770,10 +770,10 @@ export const HomePage = () => {
                 </div>
                 <div>
                   <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#166534', margin: 0 }}>
-                    No Active Critical Alerts in Immediate Area
+                    0 Active Red Alerts in Region
                   </h3>
                   <p style={{ fontSize: 'var(--text-xs)', color: '#15803D', margin: '0.15rem 0 0' }}>
-                    Regional meteorological radar and seismic networks are operational. All civil sectors are operating under normal surveillance.
+                    Regional meteorological radar and seismic networks are operational. All civil sectors operating under baseline surveillance.
                   </p>
                 </div>
               </div>
@@ -1086,9 +1086,9 @@ export const HomePage = () => {
       </section>
 
       {/* =========================================================================
-          SECTION 7: AI DISASTER RISK AND PREDICTION INFORMATION
+          SECTION 7: AUTOMATED THREAT ASSESSMENT AND PREDICTIVE TELEMETRY
           ========================================================================= */}
-      <section id="ai-prediction-section" className="home-section home-section-alt" aria-label="AI Disaster Risk and Prediction Information">
+      <section id="ai-prediction-section" className="home-section home-section-alt" aria-label="Automated Threat Assessment and Predictive Information">
         <div className="container">
           <LiveLocationDisasterPredictor />
         </div>

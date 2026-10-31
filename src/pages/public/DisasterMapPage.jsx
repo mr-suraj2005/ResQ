@@ -15,7 +15,7 @@ import {
   Building2, 
   Truck,
   Construction,
-  Sparkles,
+  Activity,
   SlidersHorizontal,
   X,
   Users,
@@ -237,8 +237,8 @@ export const DisasterMapPage = () => {
                 boxShadow: activeTab === 'AI_ENGINE' ? 'var(--shadow-xs)' : 'none'
               }}
             >
-              <Sparkles size={13} color="#4F46E5" />
-              <span>AI Situation Engine</span>
+              <Activity size={13} color="var(--color-primary-600)" />
+              <span>Automated Threat Assessment</span>
             </button>
           </div>
         </div>

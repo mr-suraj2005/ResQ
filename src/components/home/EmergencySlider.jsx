@@ -171,10 +171,10 @@ export const EmergencySlider = ({ incidents = [] }) => {
           <ShieldCheck size={32} />
         </div>
         <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--color-neutral-900)', marginBottom: '0.5rem' }}>
-          No Active Emergencies Reported
+          0 Active Incidents in Region
         </h3>
         <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-neutral-500)', maxWidth: '380px', lineHeight: 1.6, marginBottom: '1.25rem' }}>
-          All regional monitoring sensors and emergency response battalions are active and standing by across India.
+          Regional monitoring sensors and response battalions are active and standing by across sectors.
         </p>
         <Link 
           to="/report" 
